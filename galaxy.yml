@@ -5,7 +5,7 @@
 namespace: nick
 
 # The name of the collection. Has the same character restrictions as 'namespace'
-name: platform
+name: homelab
 
 # The version of the collection. Must be compatible with semantic versioning
 version: 1.0.0
@@ -16,7 +16,7 @@ readme: README.md
 # A list of the collection's content authors. Can be just the name or in the format 'Full Name <email> (url)
 # @nicks:irc/im.site#channel'
 authors:
-- Nick Hardiman
+- your name <example@domain.com>
 
 
 ### OPTIONAL but strongly recommended
@@ -43,7 +43,7 @@ tags: []
 dependencies: {}
 
 # The URL of the originating SCM repository
-repository: https://github.com/nickhardiman/platform
+repository: http://example.com/repository
 
 # The URL to any online docs
 documentation: http://docs.example.com
