@@ -1,3 +1,3 @@
-# Ansible Collection - nick.homelab
+# Ansible Collection - nick.platform
 
 Documentation for the collection.
