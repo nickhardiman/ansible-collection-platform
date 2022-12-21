@@ -1,0 +1,9 @@
+---
+# defaults file for local_repo_supplier
+app_packages:
+  - createrepo
+  - httpd
+  - unzip
+  - yum-utils
+target_dir: "/var/www/html/repos"
+

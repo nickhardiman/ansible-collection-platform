@@ -1,0 +1,96 @@
+#
+# DHCP Server Configuration file.
+#   see /usr/share/doc/dhcp-server/dhcpd.conf.example
+#   see dhcpd.conf(5) man page
+#
+option domain-name "lab.example.com";
+default-lease-time 86400;
+authoritative;
+
+# options
+# IP of the DNS server for this subnet
+# Default gateway for this subnet
+# Broadcast address for this subnet
+#
+# maximum lease time
+# after this clients in this subnet release the IP  
+# and send a new request to the server: 172800 seconds (2 days)
+#
+# Ansible customized this file using jinja2 and variables.
+# variable example for the DNS server
+# mac_prefix  52:54:00:03
+# DNS server gets a MAC address like this. 52:54:00:03:00:05
+# net_prefix  192.168.132
+# DNS server gets an IP address like this. 192.168.132.5
+
+subnet {{ net_prefix }}.0 netmask 255.255.255.0 {
+  range {{ net_prefix }}.20 {{ net_prefix }}.99;
+  option broadcast-address {{ net_prefix }}.255;
+  max-lease-time 172800;
+}
+
+# receive a MAC address, reply with an IP address
+#
+host gateway.lab.example.com {
+    hardware ethernet {{ mac_prefix }}:00:03;
+    fixed-address {{ net_prefix }}.3;
+}
+
+# receive a MAC address, reply with 
+# * IP address
+# * DNS address
+# * gateway address
+#
+group {
+  option domain-name-servers {{ net_prefix }}.5;
+  option routers {{ net_prefix }}.1;
+
+    host dhcp.lab.example.com {
+        hardware ethernet {{ mac_prefix }}:00:04;
+        fixed-address {{ net_prefix }}.4;
+    }
+
+    host dns.lab.example.com {
+        hardware ethernet {{ mac_prefix }}:00:05;
+        fixed-address {{ net_prefix }}.5;
+    }
+
+    # 6 is free 
+    
+    host git.lab.example.com {
+        hardware ethernet {{ mac_prefix }}:00:07;
+        fixed-address {{ net_prefix }}.7;
+    }
+
+    host log.lab.example.com {
+        hardware ethernet {{ mac_prefix }}:00:08;
+        fixed-address {{ net_prefix }}.8;
+    }
+
+    host metric.lab.example.com {
+        hardware ethernet {{ mac_prefix }}:00:09;
+        fixed-address {{ net_prefix }}.9;
+    }
+
+    host id.lab.example.com {
+        hardware ethernet {{ mac_prefix }}:00:10;
+        fixed-address {{ net_prefix }}.10;
+    }
+
+    host smtp.lab.example.com {
+        hardware ethernet {{ mac_prefix }}:00:11;
+        fixed-address {{ net_prefix }}.11;
+    }
+
+    host repo-rhel8.lab.example.com {
+        hardware ethernet {{ mac_prefix }}:00:12;
+        fixed-address {{ net_prefix }}.12;
+    }
+
+    host repo-rhel9.lab.example.com {
+        hardware ethernet {{ mac_prefix }}:00:13;
+        fixed-address {{ net_prefix }}.13;
+    }
+
+}
+

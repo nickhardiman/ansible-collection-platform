@@ -1,0 +1,119 @@
+# kickstart file
+# Kickstart guide is here.
+# https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/9/html/performing_an_advanced_rhel_9_installation/kickstart-commands-and-options-reference_installing-rhel-as-an-experienced-user#kickstart-commands-for-system-configuration_kickstart-commands-and-options-reference
+# This tool creates a kickstart file. 
+# https://access.redhat.com/labs/kickstartconfig/
+
+# command section
+# -----------------------------------
+
+# install
+# don't use graphical install
+text
+# look for an installer DVD
+cdrom
+# Run the Setup Agent on first boot
+firstboot --enable
+
+# l10n (localization)
+lang en_GB.UTF-8
+timezone Europe/London --utc
+keyboard --vckeymap=gb
+
+# network
+network --device=enp1s0 --bootproto=static --ip={{ net_prefix }}.4 --netmask=255.255.255.0 --gateway={{ net_prefix }}.1 --activate
+network  --hostname={{ fqdn }}
+
+# licences and repos
+# And have a look at the "subscription" section, in the post section below. 
+#repo --name="AppStream" --baseurl=file:///run/install/repo/AppStream
+eula --agreed
+
+# accounts
+# These commands set up password-based login.
+# for key-based login, check out 'sshkey --username=user "ssh_key"'.
+rootpw                                       --iscrypted "{{ user_root_password_encrypted }}"
+user --groups=wheel --name={{ user_admin_name }}   --password="{{ user_admin_password_encrypted }}" --iscrypted --gecos="{{ user_admin_name }}"
+user --groups=wheel --name={{ user_ansible_name }} --password="{{ user_ansible_password_encrypted }}" --iscrypted --gecos="{{ user_ansible_name }}"
+
+# storage 
+# All these partitions must fit in the storage volume.
+ignoredisk --only-use=vda
+# Partition clearing information
+clearpart --all --initlabel
+part /boot/efi --fstype="efi"   --ondisk=vda --size=600 --fsoptions="umask=0077,shortname=winnt"
+part /boot     --fstype="xfs"   --ondisk=vda --size=1024
+part pv.03     --fstype="lvmpv" --ondisk=vda --size={{ pv_size }}
+volgroup rhel pv.03
+logvol /       --fstype="xfs"  --size={{ lv_root }}  --name=root --vgname=rhel
+logvol /var    --fstype="xfs"  --size={{ lv_var }}  --name=var  --vgname=rhel
+logvol swap    --fstype="swap" --size=256    --name=swap --vgname=rhel
+
+# applications and services 
+# Do not configure the X Window System
+skipx
+services --enabled="chronyd"
+selinux --enforcing
+firewall --enabled --http --ssh
+
+# after installing the OS
+# skip anaconda's prompt "Installation complete. Press ENTER to quit:"
+reboot
+
+# extra sections 
+# -----------------------------------
+
+# package selection section
+# guide: 
+# https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/9-beta/html/managing_software_with_yum/index
+%packages
+# This is an environment group of packages.
+# View the full list of groups to choose from by running this command.
+#   dnf group list --hidden
+@^minimal-environment
+# single package
+kexec-tools
+# These packages provide a selection of sysadmin tools for manual work.
+bash-completion
+bind-utils
+mlocate
+nmap-ncat
+python3-cryptography
+vim
+tcpdump
+telnet
+tree
+# These packages are required for applications.
+{% for package in RPMs %}
+{{ package }}
+{% endfor %}
+%end
+
+# add-on section
+# kdump kernel crash dump mechanism
+# https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/9-beta/html-single/performing_an_advanced_rhel_installation/index#addon-com_redhat_kdump_kickstart-commands-for-addons-supplied-with-the-rhel-installation-program
+%addon com_redhat_kdump --enable --reserve-mb='auto'
+%end
+#
+
+# last jobs
+%post --log=/root/ks-post.log
+
+# key-based login for ansible user
+mkdir -m0700 /home/{{ user_ansible_name }}/.ssh/
+cat <<EOF >/home/{{ user_ansible_name }}/.ssh/authorized_keys
+{{ user_ansible_public_key }}
+EOF
+# fix ownership and permissions
+chown -R {{ user_ansible_name }}:{{ user_ansible_name }} /home/{{ user_ansible_name }}/.ssh
+chmod 0600 /home/{{ user_ansible_name }}/.ssh/authorized_keys
+# fix up selinux context
+restorecon -vR /home/{{ user_ansible_name }}/.ssh/
+
+# subscription
+# use your Red Hat developer account
+/usr/sbin/subscription-manager register --username={{ rhsm_user }} --password='{{ rhsm_password }}'
+/usr/sbin/subscription-manager attach --pool={{ rhsm_pool_id }}
+
+%end
+

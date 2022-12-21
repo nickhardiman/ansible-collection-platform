@@ -1,0 +1,24 @@
+---
+# tasks file for dhcp_server
+  # package should already be installed by kickstart
+  - name: install the daemon
+    ansible.builtin.dnf:
+      name: "{{ app_packages }}"
+      state: latest
+
+  - name: copy config
+    ansible.builtin.template:
+      src: dhcpd.conf.j2
+      dest: /etc/dhcp/dhcpd.conf
+      owner: root
+      group: root
+      mode: '0644'
+    notify: restart service
+
+  - name: start the daemon
+    ansible.builtin.systemd:
+      name: "{{ app_unit }}"
+      state: started
+      enabled: yes
+
+

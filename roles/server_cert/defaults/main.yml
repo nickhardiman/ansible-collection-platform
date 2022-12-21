@@ -1,0 +1,7 @@
+---
+# defaults file for server_cert
+ca_dir: /root/ca
+ca_secret_passphrase: redhat
+fqdn: host.example.com
+server_cn: "{{ fqdn }}"
+

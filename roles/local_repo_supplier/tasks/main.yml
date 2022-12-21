@@ -1,0 +1,18 @@
+---
+# Mirror baseos and appstream RPM repositories
+
+- name: "repo: find the distribution"
+  ansible.builtin.setup:
+    gather_subset:
+      - 'distribution_major_version'
+
+- debug:
+    msg: "repo: download RPM packages for RHEL {{ ansible_facts['distribution_major_version'] }}"
+
+- ansible.builtin.import_tasks: rhel-8-repo.yml
+  when: ansible_facts['distribution_major_version'] == "8" 
+
+- ansible.builtin.import_tasks: rhel-9-repo.yml
+  when: ansible_facts['distribution_major_version'] == "9" 
+
+

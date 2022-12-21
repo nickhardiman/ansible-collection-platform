@@ -1,0 +1,49 @@
+---
+# RPM repositories
+# https://access.redhat.com/solutions/23016
+#
+# create a webserver 
+# mirror a repo in the docroot
+#
+- name: install app packages
+  ansible.builtin.dnf:
+    name: "{{ app_packages }}"
+    state: latest
+
+- name: ensure repo directory exists
+  ansible.builtin.file:
+    path: "{{ target_dir }}"
+    state: directory
+    owner: root
+    group: root
+
+- name: start the daemon
+  ansible.builtin.systemd:
+    name: httpd
+    state: started
+    enabled: yes
+
+# mirror a repo in the docroot
+# over 2,000 packages, 10 minutes to download
+# Subsequent runs are quicker since they only download missing and updated packages.
+- name: mirror RHEL 9 baseos repo (about 2,500 packages, 3GB, 10 minutes)
+  ansible.builtin.shell:
+    cmd: >
+      reposync 
+      --repoid=rhel-9-for-x86_64-baseos-rpms
+      --download-path "{{ target_dir }}" 
+      --download-metadata
+      --newest-only
+
+# A full download is about 8,000 packages, 20GB, 40 minutes.
+# Use --newest-only to cut this down to ???
+- name: mirror RHEL 9 appstream repo (about 8,000 packages, 20GB, 40 minutes)
+  ansible.builtin.shell:
+    cmd: >
+      reposync 
+      --repoid=rhel-9-for-x86_64-appstream-rpms
+      --download-path "{{ target_dir }}" 
+      --download-metadata
+      --newest-only
+
+

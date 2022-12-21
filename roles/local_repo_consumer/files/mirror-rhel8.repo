@@ -1,0 +1,16 @@
+# 
+
+[mirror-rhel-8-for-x86_64-baseos-rpms]
+name = Mirror of Red Hat Enterprise Linux 8 for x86_64 - BaseOS (RPMs)
+baseurl= http://repo-rhel8.lab.example.com/repos/rhel-8-for-x86_64-baseos-rpms
+enabled = 1
+gpgcheck = 1
+gpgkey = file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release
+
+[mirror-rhel-8-for-x86_64-appstream-rpms]
+name = Mirror of Red Hat Enterprise Linux 8 for x86_64 - AppStream (RPMs)
+baseurl= http://repo-rhel8.lab.example.com/repos/rhel-8-for-x86_64-appstream-rpms
+enabled = 1
+gpgcheck = 1
+gpgkey = file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release
+

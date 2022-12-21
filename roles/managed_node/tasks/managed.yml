@@ -1,0 +1,34 @@
+---
+
+- name: add group
+  ansible.builtin.group:
+    name: "{{ managed_node_group }}"
+    state: present
+
+- name: add user
+  ansible.builtin.user:
+    name: "{{ managed_node_user }}"
+    group: "{{ managed_node_group }}"
+    state: present
+
+- name: add authorized key
+  ansible.posix.authorized_key:
+    user: "{{ managed_node_user }}"
+    key: "{{ managed_node_public_key }}"
+
+- name: add passwordless sudo
+  ansible.builtin.template:
+    src: sudoers
+    dest: "/etc/sudoers.d/{{ managed_node_user }}"
+    validate: /usr/sbin/visudo -cf %s
+
+- name: information
+  ansible.builtin.debug:
+    msg:
+    - "User {{ managed_node_user }} is ready on the managed node."
+    - "Try this."
+    - "  ansible --module-name=ping   --user {{ managed_node_user }} --private-key {{ control_node_private_key_file }} --inventory {{ inventory_hostname }}, {{ inventory_hostname }}"
+    - "Add these lines to file ansible.cfg [defaults] section: 'remote_user = {{ managed_node_user }}' and 'private_key_file = {{ control_node_private_key_file }}'."
+    - "Now try this."
+    - "  ansible --module-name=ping  --inventory {{ inventory_hostname }}, {{ inventory_hostname }}"
+

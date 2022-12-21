@@ -1,0 +1,15 @@
+$TTL 3H
+@    IN SOA    @ root.lab.example.com (
+                    0    ; serial
+                    1D    ; refresh
+                    1H    ; retry
+                    1W    ; expire
+                    3H )    ; minimum
+            IN NS          name1.lab.example.com.
+;
+; virtual machines
+; https://hardiman.consulting/rhel/9/
+1           IN PTR      gateway1.private.example.com.
+72          IN PTR        guest2.private.example.com.
+; more VMs
+74          IN PTR      capsule1.private.example.com.

@@ -1,0 +1,13 @@
+<!-- libvirt network "private0", hooked up to bridge "privbr0" -->
+<network>
+  <name>private0</name>
+  <bridge name="privbr0"/>
+  <mac address='52:54:00:00:01:01'/>
+  <ip address="192.168.152.1" netmask="255.255.255.0">
+    <dhcp>
+      <range start="192.168.152.2" end="192.168.152.254"/>
+    </dhcp>
+  </ip>
+  <ip family="ipv6" address="2001:db8:ca2:3::1" prefix="64"/>
+</network>
+

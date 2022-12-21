@@ -1,0 +1,13 @@
+---
+# tasks file for local_repo_consumer
+
+# RPM repo
+- name: copy DNF config
+  ansible.builtin.copy:
+    src: "{{ dnf_config_file }}"
+    dest: /etc/yum.repos.d/
+    owner: root
+    group: root
+    mode: '0644'
+
+

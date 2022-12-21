@@ -1,0 +1,9 @@
+---
+# tasks file for hosts_record
+
+- name: add a dns host entry
+  ansible.builtin.lineinfile:
+    path: /etc/hosts
+    search_string: "{{ fqdn }}"
+    line: "{{ ip_address }}   {{ fqdn }}   {{ host }}"
+

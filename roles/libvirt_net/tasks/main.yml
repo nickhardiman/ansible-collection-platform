@@ -1,0 +1,6 @@
+---
+# tasks file for libvirt_net
+
+- include_tasks: linux-bridge.yml
+- include_tasks: libvirt-net.yml
+

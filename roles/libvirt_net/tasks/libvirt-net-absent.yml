@@ -1,0 +1,11 @@
+---
+# stop a network
+- community.libvirt.virt_net:
+    command: destroy
+    name: "{{ libvirt_net_name }}"
+ 
+# delete a network
+- community.libvirt.virt_net:
+    state: absent
+    name: "{{ libvirt_net_name }}"
+ 

@@ -1,0 +1,33 @@
+# requires a network name and a matching XML definition file eg. net-lab and net-lab.xml
+# https://docs.ansible.com/ansible/latest/collections/community/libvirt/virt_net_module.html
+
+- name: install RPM packages
+  dnf:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - python3-libvirt
+    - python3-lxml
+
+# Define a new network
+- community.libvirt.virt_net:
+    command: define
+    name: "{{ libvirt_net_name }}"
+    xml: '{{ lookup("template", libvirt_net_name + ".xml") }}'
+
+# Start a network
+- community.libvirt.virt_net:
+    command: create
+    name: "{{ libvirt_net_name }}"
+
+# Ensure that a network is active (needs to be defined and built first)
+- community.libvirt.virt_net:
+    state: active
+    name: "{{ libvirt_net_name }}"
+
+# Ensure that a given network will be started at boot
+- community.libvirt.virt_net:
+    autostart: yes
+    name: "{{ libvirt_net_name }}"
+
+

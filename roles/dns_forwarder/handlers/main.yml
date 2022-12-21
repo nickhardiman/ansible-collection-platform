@@ -1,0 +1,12 @@
+---
+# handlers file for dns_server
+- name: restart service
+  ansible.builtin.systemd:
+    name: "{{ app_systemd_unit }}"
+    state: restarted
+
+- name: reload service
+  ansible.builtin.systemd:
+    name: "{{ app_systemd_unit }}"
+    state: reloaded
+

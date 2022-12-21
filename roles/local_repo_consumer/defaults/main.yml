@@ -1,0 +1,4 @@
+---
+# defaults file for local_repo_consumer
+dnf_config_file: mirror-rhel9.repo
+

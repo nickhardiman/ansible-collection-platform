@@ -1,0 +1,17 @@
+#!/usr/bin/bash  
+  
+virt-install   \
+  --name="{{ host }}"  \
+  --vcpus="{{ cpus }}"  \
+  --ram="{{ ram }}"  \
+  --disk="path=/var/lib/libvirt/images/{{ host }}.qcow2,bus=virtio,size={{ disk_size }},sparse=yes"  \
+  --os-variant="{{ os_variant }}"  \
+{% for nic in nics %}
+  --network="network={{ nic.net }},mac={{ nic.mac }}"  \
+{% endfor %}
+  --boot="uefi,hd,menu=on"  \
+  --location="{{ install_iso }}"  \
+  --initrd-inject="{{ kickstart_path }}/{{ kickstart_file }}"  \
+  --extra-args "inst.ks=file:/{{ kickstart_file }} console=tty0 console=ttyS0,115200"   \
+  --noautoconsole  
+  

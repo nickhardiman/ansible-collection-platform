@@ -1,0 +1,13 @@
+---
+# defaults file for dns_server
+app_packages:
+- squid
+app_config: squid.conf
+#app_content:
+#  - dunno
+app_systemd_unit: squid
+app_fw_services: 
+- squid
+#app_fw_ports: 
+#- 53/udp
+

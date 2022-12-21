@@ -1,0 +1,12 @@
+---
+# tasks file for cdn_repo_consumer
+
+- name: Register as user with password and auto-subscribe to available content.
+  community.general.redhat_subscription:
+    state: present
+    username: "{{ rhsm_user }}"
+    password: "{{ rhsm_password }}"
+    auto_attach: true
+ 
+ 
+

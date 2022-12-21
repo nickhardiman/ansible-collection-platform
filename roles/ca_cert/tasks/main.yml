@@ -1,0 +1,90 @@
+---
+# tasks file for ca_cert
+
+# Create a directory for CA things (eg. /root/ca/)
+# Create a key.
+# Create a self-signed CA certificate using this key.
+# Store these in the directory and in /etc/pki/.
+# Why bother storing in two places? 
+# I am guessing the CA directory will come in useful in future.
+
+- name: required packages
+  ansible.builtin.dnf:
+    name: python3-cryptography
+    state: latest
+
+- name: Create a directory if it does not exist
+  ansible.builtin.file:
+    path: "{{ dir_ca }}"
+    state: directory
+    mode: '0750'
+
+# create private key ca-certificate.key
+- name: Create private key with password protection
+  community.crypto.openssl_privatekey:
+    path: "{{ dir_ca }}/ca-certificate.key"
+    passphrase: "{{ secret_ca_passphrase }}"
+    cipher: auto
+
+# copy key to /etc/pki/tls/private/
+# ??? useful?
+- name: copy new private key to TLS directory
+  ansible.builtin.copy:
+    src: "{{ dir_ca }}/ca-certificate.key"
+    remote_src: yes
+    dest: /etc/pki/tls/private/ca-certificate.key
+    mode: '0600'
+  register: r_cp_ca_key
+
+# create CSR
+# This CSR is passed on using a registered variable.
+# To write the CSR to a file, see this page.
+# https://docs.ansible.com/ansible/latest/collections/community/crypto/openssl_csr_module.html
+- name: Create certificate signing request (CSR) for CA certificate
+  community.crypto.openssl_csr_pipe:
+    privatekey_path: "{{ dir_ca }}/ca-certificate.key"
+    privatekey_passphrase: "{{ secret_ca_passphrase }}"
+    common_name: Ansible CA
+    use_common_name_for_san: false  # since we do not specify SANs, don't use CN as a SAN
+    basic_constraints:
+    - 'CA:TRUE'
+    basic_constraints_critical: yes
+    key_usage:
+    - keyCertSign
+    key_usage_critical: true
+  register: r_ca_csr
+
+- debug:
+    var: r_ca_csr
+    verbosity: 1
+
+# create cert ca-certificate.pem
+- name: Create self-signed CA certificate from CSR
+  community.crypto.x509_certificate:
+    path: "{{ dir_ca }}/ca-certificate.pem"
+    csr_content: "{{ r_ca_csr['csr'] }}"
+    privatekey_path: "{{ dir_ca }}/ca-certificate.key"
+    privatekey_passphrase: "{{ secret_ca_passphrase }}"
+    provider: selfsigned
+  register: r_ca_cert
+
+- debug:
+    var: r_ca_cert
+    verbosity: 1
+
+# copy certificate to /etc/pki/ca-trust/source/anchors/
+- name: copy new self-signed certificate to trust anchors directory
+  ansible.builtin.copy:
+    src: "{{ dir_ca }}/ca-certificate.pem"
+    remote_src: yes
+    dest: /etc/pki/ca-trust/source/anchors/ca-certificate.pem
+    mode: '0644'
+  register: r_cp_ca_cert
+
+# update-ca-trust
+- name: update libraries of trusted CA certificates
+  ansible.builtin.command:
+    cmd: update-ca-trust
+  when: r_cp_ca_cert['changed'] == true
+
+

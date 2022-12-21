@@ -1,0 +1,32 @@
+
+# use gather_facts to set ansible_python
+# Create bridge bridge-{{ name }}
+# and nmcli connection config bridge-{{ name }}
+
+- name: create a bridge using rhel-system-role network
+  vars:
+    network_connections:
+      - name: "{{ bridge_nmcli_name }}"
+        state: up
+        type: bridge
+        interface_name: "{{ bridge_device_name }}"
+        ip:
+          address:
+          - "{{ bridge_ip_cidr }}"
+        #mac: "{{ bridge_mac }}"
+  include_role:
+    name: rhel-system-roles.network
+
+# check
+ # ip -brief link show type bridge
+ # ip -brief link show type dummy
+ # ip route
+ # nmcli con
+ # nmcli device status
+
+# delete
+ # sudo nmcli con delete member-dummy0
+ # sudo nmcli con delete dummy-dummy0
+ # sudo nmcli con delete bridge-test0
+
+

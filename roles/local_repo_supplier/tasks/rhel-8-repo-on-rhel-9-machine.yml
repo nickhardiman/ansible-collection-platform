@@ -1,0 +1,69 @@
+---
+# tasks file for local_repo_supplier
+#
+- name: install app packages
+  ansible.builtin.dnf:
+    name: "{{ app_packages }}"
+    state: latest
+
+# RPM repositories
+
+- name: ensure repo directory exists
+  ansible.builtin.file:
+    path: "{{ target_dir }}"
+    state: directory
+    owner: root
+    group: root
+
+
+# start and enable HTTPD
+- name: start the daemon
+ ansible.builtin.systemd:
+   name: httpd
+   state: started
+   enabled: yes
+
+
+# !!! These can disappear. 
+# deleted on the box by ???
+- name: authorization keys for downloading RHEL 8 Red Hat Content Delivery Network
+  ansible.builtin.copy:
+    src: "{{ item }}"
+    dest: /etc/pki/entitlement/
+    owner: root
+    group: root
+    mode: '0644'
+  loop: 
+  - 1234567890123456789.pem
+  - 1234567890123456789-key.pem
+
+- name: authorization keys for downloading RHEL 8 Red Hat Content Delivery Network
+  ansible.builtin.copy:
+    src: cdn-rhel8.repo
+    dest: /etc/yum.repos.d/
+    owner: root
+    group: root
+    mode: '0644'
+
+# full: about 13,000 packages, ?GB, ? minutes 
+- name: mirror RHEL 8 baseos repo (about 2,000 packages, 5 GB, 10 minutes)
+  shell:
+    cmd: >
+      reposync 
+      --repoid=cdn-rhel-8-for-x86_64-baseos-rpms
+      --download-path "{{ target_dir }}" 
+      --download-metadata
+      --newest-only
+
+# full: about 28,000 packages, ?GB, ? minutes
+# causes modularity errors
+- name: mirror RHEL 8 appstream repo (about 8,000 packages, 20 GiB, 40 minutes)
+    shell:
+    cmd: >
+      reposync
+      --repoid=rhel-8-for-x86_64-appstream-rpms
+      --download-path "{{ target_dir }}"
+      --download-metadata
+      --newest-only
+
+

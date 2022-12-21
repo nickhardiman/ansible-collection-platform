@@ -1,0 +1,46 @@
+---
+# create a webserver 
+# mirror a repo in the docroot
+# !!! Copying the appstream repo causes modularity errors.
+
+- name: install app packages
+  ansible.builtin.dnf:
+    name: "{{ app_packages }}"
+    state: latest
+
+- name: ensure repo directory exists
+  ansible.builtin.file:
+    path: "{{ target_dir }}"
+    state: directory
+    owner: root
+    group: root
+
+- name: start the daemon
+  ansible.builtin.systemd:
+    name: httpd
+    state: started
+    enabled: yes
+
+# RPM repositories
+
+# full: about 13,000 packages, ?GB, ? minutes 
+- name: mirror RHEL 8 baseos repo (about 2,000 packages, 5 GB, 10 minutes)
+  ansible.builtin.shell:
+    cmd: >
+      reposync 
+      --repoid=rhel-8-for-x86_64-baseos-rpms
+      --download-path "{{ target_dir }}" 
+      --download-metadata
+      --newest-only
+
+# full: about 28,000 packages, ?GB, ? minutes
+# causes modularity errors
+- name: mirror RHEL 8 appstream repo (about 8,000 packages, 20 GiB, 40 minutes)
+  ansible.builtin.shell:
+    cmd: >
+      reposync
+      --repoid=rhel-8-for-x86_64-appstream-rpms
+      --download-path "{{ target_dir }}"
+      --download-metadata
+      --newest-only
+

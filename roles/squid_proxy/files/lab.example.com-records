@@ -1,0 +1,18 @@
+$TTL 3H
+@    IN SOA    @ root.lab.example.com (
+                    0    ; serial
+                    1D    ; refresh
+                    1H    ; retry
+                    1W    ; expire
+                    3H )    ; minimum
+; these records are names and addresses for lab.example.com
+               IN NS   dns
+               A       192.168.134.5
+               AAAA    fdaa:bbcc:ddee:0:5054:ff:fe00:12
+;
+; virtual machines
+dhcp      IN A    192.168.134.4
+dns       IN A    192.168.134.5
+repo      IN A    192.168.134.6
+git       IN A    192.168.134.7
+

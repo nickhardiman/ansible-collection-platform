@@ -1,0 +1,6 @@
+---
+# uses localhost, causes issues with execution environment
+#- include_tasks: control.yml
+
+- include_tasks: managed.yml
+

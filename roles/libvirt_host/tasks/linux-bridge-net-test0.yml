@@ -1,0 +1,107 @@
+#
+# /usr/share/doc/rhel-system-roles/network/example-bridge_with_vlan-playbook.yml 
+- name: Install RPM package
+  dnf:
+    name: rhel-system-roles
+    state: present
+#
+# attempting to translate these commands into tasks
+# https://hardiman.consulting/satellite6/dev/set-up/libvirt-network-test0.html
+# dummy device
+# /sbin/ip link add dummy0 address 52:54:00:03:00:01 type dummy
+# nmcli connection add type dummy ifname dummy0 ipv4.method manual ipv4.addresses 192.168.132.1/24
+# nmcli con mod dummy-dummy0 ipv4.method manual
+# bridge device
+# nmcli con add ifname test0 type bridge
+# nmcli con mod bridge-test0 ipv4.addresses 192.168.132.2/24
+# nmcli con mod bridge-test0 ipv4.method manual
+# nmcli con mod bridge-test0 bridge.mac-address 52:54:00:03:00:02
+# nmcli con up bridge-test0
+# add dummy to bridge
+# nmcli con add type bridge-slave ifname dummy-dummy0 master bridge-test0
+# nmcli con up bridge-test0
+
+
+# use gather_facts to set ansible_python
+- name: use rhel-system-role network
+  vars:
+    network_connections:
+      #
+      # create fake ethernet interface dummy0
+      # and nmcli connection config dummy-dummy0
+      - name: dummy-dummy0
+        state: up
+        type: dummy
+        interface_name: dummy0
+        ip:
+          address:
+          - "192.168.132.1/24"
+        #mac: "52:54:00:03:00:01"
+      #
+      # Create bridge bridge-{{ name }}
+      # and nmcli connection config bridge-{{ name }}
+      - name: bridge-test0
+        state: up
+        type: bridge
+        interface_name: test0
+        ip:
+          address:
+          - "192.168.132.2/24"
+        #mac: "52:54:00:03:00:02"
+      #
+      # add to the bridge
+      # and nmcli connection config bridge-slave-{{ name }}
+      - name: member-dummy0
+        state: up
+        type: dummy
+        interface_name: dummy0
+        controller: bridge-test0
+        port_type: bridge
+  include_role:
+    name: rhel-system-roles.network
+
+# check
+ # ip -brief link show type bridge
+ # ip -brief link show type dummy
+ # ip route
+ # nmcli con
+ # nmcli device status
+
+# delete
+ # sudo nmcli con delete member-dummy0
+ # sudo nmcli con delete dummy-dummy0
+ # sudo nmcli con delete bridge-test0
+
+
+# https://docs.ansible.com/ansible/latest/collections/community/libvirt/virt_net_module.html
+#
+
+- name: install RPM packages
+  dnf:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - python3-libvirt
+    - python3-lxml
+
+# Define a new network
+- community.libvirt.virt_net:
+    command: define
+    name: net-test0
+    xml: '{{ lookup("file", "net-test0.xml") }}'
+
+# Start a network
+- community.libvirt.virt_net:
+    command: create
+    name: net-test0
+
+# Ensure that a network is active (needs to be defined and built first)
+- community.libvirt.virt_net:
+    state: active
+    name: net-test0
+
+# Ensure that a given network will be started at boot
+- community.libvirt.virt_net:
+    autostart: yes
+    name: net-test0
+

@@ -1,0 +1,14 @@
+---
+#
+app_packages:
+- bind
+- python3-dns
+- python3-cryptography
+app_config: named.conf
+app_systemd_unit: named
+app_fw_services: 
+- dns
+#app_fw_ports: 
+#- 53/udp
+#- 53/tcp
+

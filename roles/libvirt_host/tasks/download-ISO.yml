@@ -1,0 +1,40 @@
+  
+# is this not the cert file?
+# /etc/rhsm/ca/redhat-uep.pem
+# 
+  - name: get CA certificate from cdn.redhat.com
+    ansible.builtin.shell:
+      cmd: openssl s_client -showcerts -verify 5 -connect cdn.redhat.com:443 < /dev/null > /var/tmp/certs.cer
+      creates: /var/tmp/certs.cer
+
+  - name: copy client cert ID
+    ansible.builtin.find:
+      paths: /etc/pki/entitlement/
+      patterns: '*-key.pem'
+    register: r_find
+  - debug: 
+      var: r_find['files'][0]['path']
+  - set_fact:
+      entitlement_id: "{{ r_find['files'][0]['path'] | regex_search('\\d+') }}"
+  - debug: 
+      var: entitlement_id
+
+# not able to use this task to download an ISO
+#
+  - name: get a page from cdn.redhat.com
+    ansible.builtin.shell:
+      cmd: >
+        curl 
+        --cacert /var/tmp/certs.cer 
+        --cert /etc/pki/entitlement/"{{ entitlement_id }}".pem 
+        --key /etc/pki/entitlement/"{{ entitlement_id }}"-key.pem   
+        https://cdn.redhat.com/content/dist/rhel8/8.3/x86_64/appstream/os/repodata/
+    register: r_curl
+  - debug: 
+      var: r_curl
+
+# manual process to download from 
+# https://access.redhat.com/downloads/content/479/ver=/rhel---9/9.0/x86_64/product-software
+# is here
+# https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/9/html/performing_a_standard_rhel_9_installation/assembly_preparing-for-your-installation_installing-rhel#downloading-beta-installation-images_assembly_preparing-for-your-installation
+#

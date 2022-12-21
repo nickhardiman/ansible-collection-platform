@@ -1,0 +1,7 @@
+---
+# defaults file for dhcp_server
+app_packages:
+    - dhcp-server
+    - python3-cryptography
+app_unit: dhcpd
+

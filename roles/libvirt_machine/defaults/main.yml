@@ -1,0 +1,10 @@
+---
+# defaults file for libvirt-guest
+#   https://github.com/nickhardiman/libvirt-guest/blob/main/defaults/main.yml
+
+# compute
+cpus: 2
+# size in MiB
+ram: 4096
+
+host: kvm-guest

@@ -1,0 +1,25 @@
+$TTL 3H
+@    IN SOA    @ root.lab.example.com (
+                    0    ; serial
+                    1D    ; refresh
+                    1H    ; retry
+                    1W    ; expire
+                    3H )    ; minimum
+; these records are names and addresses for lab.example.com
+               IN NS   dns
+               A       {{ net_prefix }}.5
+               AAAA    fdaa:bbcc:ddee:0:5054:ff:fe00:12
+;
+; virtual machines
+gateway      IN A    {{ net_prefix }}.3
+dhcp         IN A    {{ net_prefix }}.4
+dns          IN A    {{ net_prefix }}.5
+; 6 is free
+git          IN A    {{ net_prefix }}.7
+log          IN A    {{ net_prefix }}.8
+metric       IN A    {{ net_prefix }}.9
+id           IN A    {{ net_prefix }}.10
+smtp         IN A    {{ net_prefix }}.11
+repo-rhel8   IN A    {{ net_prefix }}.12
+repo-rhel9   IN A    {{ net_prefix }}.13
+

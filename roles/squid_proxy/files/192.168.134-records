@@ -1,0 +1,16 @@
+$TTL 3H
+@    IN SOA    @ root.lab.example.com (
+                    0    ; serial
+                    1D    ; refresh
+                    1H    ; retry
+                    1W    ; expire
+                    3H )    ; minimum
+            IN NS          dns.lab.example.com.
+;
+; virtual machines
+4           IN PTR         dhcp.lab.example.com.
+5           IN PTR          dns.lab.example.com.
+6           IN PTR         repo.lab.example.com.
+7           IN PTR          git.lab.example.com.
+;
+

@@ -1,0 +1,22 @@
+# local key pair
+#
+- name: add ansible's private key to the control node
+  copy:
+    content: "{{ control_node_private_key }}"
+    dest: "{{ control_node_private_key_file }}"
+    mode: '0600'
+  delegate_to: localhost
+  connection: local
+  become: no
+
+# occasionally useful to keep a local copy of the pubkey 
+- name: also store the public key on the control node
+  copy:
+    content: "{{ managed_node_public_key }}"
+    dest: "{{ control_node_public_key_file }}"
+    mode: '0644'
+  delegate_to: localhost
+  connection: local
+  become: no
+
+

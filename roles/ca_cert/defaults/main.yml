@@ -1,0 +1,5 @@
+---
+# defaults file for ca_cert
+dir_ca: /root/ca
+secret_ca_passphrase: redhat
+

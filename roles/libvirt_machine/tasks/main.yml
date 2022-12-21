@@ -1,0 +1,33 @@
+---
+
+# !!! machine should be created here, using image 
+# more or less a copy of machine creation in machine_storage
+
+- name: start the guest when the host boots up
+  community.libvirt.virt:
+    name: "{{ host }}"
+    autostart: yes
+
+- name: restart the VM
+  community.libvirt.virt:
+    name: "{{ host }}"
+    state: running
+
+# check
+# These tasks use libvirt only.
+# They don't check anything at the OS level, such as waiting for a connection. 
+
+- name: get domain info
+  community.libvirt.virt:
+    name: "{{ host }}"
+    command: info
+  register: r_domain_info
+
+- name: display domain info
+  debug:
+    var: r_domain_info[host]
+
+- name: some kind of smoke test here?
+  debug:
+    msg: install and restart should be complete here.
+

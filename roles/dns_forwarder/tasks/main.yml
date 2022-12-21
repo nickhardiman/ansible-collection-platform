@@ -1,0 +1,45 @@
+---
+#
+#
+- name: copy service config
+  ansible.builtin.copy:
+    src: "{{ app_config }}"
+    dest: /etc/
+    owner: root
+    group: named
+    mode: '0640'
+  notify: restart service
+ 
+- name: add command line option for IPv4 only
+  ansible.builtin.lineinfile:
+    path: /etc/sysconfig/named
+    regexp: '^OPTIONS='
+    line: OPTIONS="-4"
+
+- name: start the daemon
+  ansible.builtin.systemd:
+    name: "{{ app_systemd_unit }}"
+    state: started
+    enabled: yes
+ 
+
+# firewall
+# https://access.redhat.com/documentation/en-us/red_hat_ansible_automation_platform/2.2/html-single/red_hat_ansible_automation_platform_installation_guide/index#ref-access-control-requirements_planning
+- name: permit service traffic
+  ansible.posix.firewalld:
+    service: "{{ item }}"
+    immediate: yes
+    permanent: yes
+    state: enabled
+  loop: "{{ app_fw_services }}"
+
+
+- name: permit port traffic
+  ansible.posix.firewalld:
+    port: "{{ item }}"
+    immediate: yes
+    permanent: yes
+    state: enabled
+  loop: "{{ app_fw_ports }}"
+  when: app_fw_ports is defined
+

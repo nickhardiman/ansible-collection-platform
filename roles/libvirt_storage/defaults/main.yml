@@ -1,0 +1,84 @@
+---
+# defaults file for libvirt-guest
+#   https://github.com/nickhardiman/libvirt-guest/blob/main/defaults/main.yml
+
+# compute
+cpus: 2
+# size in MiB
+ram: 4096
+
+# storage
+# size in GiB
+disk_size: 30
+# Add up the sizes below and make sure they fit in the disk_size.
+# partitions
+# 1 for /boot/efi                600M
+# 2 for /boot                    1024M
+# 3 LVM Physical Volume          28G * 1024 = 28672M
+pv_size: 28672
+# LVM logical volume for /root   13G * 1024 = 13312M
+lv_root: 13312
+# LVM logical volume for /var   13G * 1024 = 13312M
+lv_var: 13312
+# LVM volume for swap: 256M
+
+# network
+# MAC address list here
+#   https://hardiman.consulting/rhel/9/set-up/host1-libvirt-network.html
+nics: 
+-  
+  name: enp1s0 
+  mac: "52:54:00:00:00:99" 
+  net: public0 
+
+# OS
+host: kvm-guest
+fqdn: "{{ host }}.lab.example.com"
+install_iso: /var/lib/libvirt/images/rhel-baseos-9.0-x86_64-dvd.iso
+os_variant: rhel9.0
+RPMs: []
+
+# kickstart
+# playbook copies kvm-guest.ks to /var/tmp/
+# !!! replace /var/tmp with a temporary ansible working directory
+kickstart_path: "/var/tmp"
+kickstart_file: "{{ host }}.ks"
+kickstart_template: kvm-guest.ks.j2
+
+# accounts
+#
+# Red Hat Subscription Management user
+rhsm_user: RH_user
+# In the real world, a password would be protected.
+# It would be encrypted, managed by a vault service, or stored away from git.
+# For Ansible vault, see
+# https://docs.ansible.com/ansible/latest/user_guide/vault.html#encrypting-individual-variables-with-ansible-vault
+rhsm_password: RH_password
+rhsm_pool_id: 12345
+#
+# Kickstart's "user" directive has the --iscrypted option.
+# The command 
+#   openssl passwd  -6 --salt SQXqGsYna84.3SL5 "Password;1" 
+# turns "Password;1" into this. 
+#   $6$SQXqGsYna84.3SL5$gJw6v23ZZ7WEITfBoZmyNDsIKeoqhS2Mwfk.KpCRloK7EfxlhL3MAlTCO33fr7QRfoG.GvBH1seWtQqz5v82q1
+# The long encrypted string is made of a few fields, separated by "$".
+# The first 16 characters of the second field are a "salt".
+#
+# superuser
+user_root_password: Password;1
+user_root_password_encrypted: "{{ lookup('ansible.builtin.pipe', '/usr/bin/openssl passwd  -6 --salt=G3GIlnUH.JqcrAQl ' + user_root_password  | quote ) }}"
+#
+# user account for a sysadmin
+user_admin_name: nick
+user_admin_password: Password;1
+user_admin_password_encrypted: "{{ lookup('ansible.builtin.pipe', '/usr/bin/openssl passwd  -6 --salt=G3GIlnUH.JqcrAQl ' + user_admin_password  | quote ) }}"
+#
+# system account for management
+user_ansible_name: ansible_user
+# This password is for privilege escalation.
+user_ansible_password: Password;1
+user_ansible_password_encrypted: "{{ lookup('ansible.builtin.pipe', '/usr/bin/openssl passwd  -6 --salt=G3GIlnUH.JqcrAQl ' + user_ansible_password  | quote ) }}"
+# This key is for SSH login.
+user_ansible_public_key: |
+  ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDDGo+elnDQuTWj5iYvkYgW0UJPsAXhS4dgX+vOXyabWePs+L+6/uTi74lnotRlP6ffpw5IHrCafxDoGyElpcKsCbRrsELO/+dLZCi4H+TWcWNm3Z0/ZyxZO8+fJpxx0PFm3F2qDS/8Ld+7CO2Yiy6MGEVrnQnmYWb+AB/djbzh/YFHl5VXsLCH7UIucY5FT2KcIVCWh/vDX4CBjWyAU4TdOjgdpQJ95YfOnny8pFaZNmJxkqUYqqEU7tmzIzLnJlZWfqxlHJuahmVofyUF8ODGsRP/NvFmJBSV5sTB4m9zqYpROXGDHBuF/DAHVDpkXpadvXqiRVcsZxCsOjqwFATtFWIzapC/Wlt0e0Buo/7rhx+tpPdwslmXIdGO1IaqN6+HQ9yjqL7IIVITfNt3Vb8ZBb1IulDcPgbei+UATAwnvszA/bRzfps4ncyS1AMyByfOUmczYT+/FO8PjiDiv9n3V7lU7i8esDBonbuFjlAe/BsnhLCHlEgDTicLyAZYYO0= pubkey for ansible
+

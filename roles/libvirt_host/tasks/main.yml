@@ -1,0 +1,12 @@
+---
+
+- include_tasks: libvirt-modular-daemons.yml
+- include_tasks: linux-bridge-pubbr0.yml
+- include_tasks: linux-bridge-privbr0.yml
+- include_tasks: linux-bridge-privbr1.yml
+- include_tasks: linux-bridge-net-test0.yml
+- include_tasks: pool-images.yml
+# CDN changed, this approach no longer works.
+#- include_tasks: download-ISO.yml
+# Do something based on download-ISO.sh
+

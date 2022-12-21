@@ -1,0 +1,41 @@
+---
+# https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/9/html-single/deploying_web_servers_and_reverse_proxies/index#configuring-the-squid-caching-proxy-server_deploying-web-servers-and-reverse-proxies
+#
+# tasks file for dns_server
+#
+- name: copy service config
+  ansible.builtin.copy:
+    src: "{{ app_config }}"
+    dest: /etc/
+    owner: root
+    group: squid
+    mode: '0640'
+  notify: restart service
+ 
+# systemd
+- name: start the daemon
+  ansible.builtin.systemd:
+    name: "{{ app_systemd_unit }}"
+    state: started
+    enabled: yes
+ 
+
+# firewalld
+- name: permit service traffic
+  ansible.posix.firewalld:
+    service: "{{ item }}"
+    immediate: yes
+    permanent: yes
+    state: enabled
+  loop: "{{ app_fw_services }}"
+
+
+- name: permit port traffic
+  ansible.posix.firewalld:
+    port: "{{ item }}"
+    immediate: yes
+    permanent: yes
+    state: enabled
+  loop: "{{ app_fw_ports }}"
+  when: app_fw_ports is defined
+

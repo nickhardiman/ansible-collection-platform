@@ -1,0 +1,48 @@
+$TTL 3H
+@    IN SOA    @ root.lab.example.com (
+                    0    ; serial
+                    1D    ; refresh
+                    1H    ; retry
+                    1W    ; expire
+                    3H )    ; minimum
+            IN NS          name1.lab.example.com.
+;
+; virtual machines
+; https://hardiman.consulting/rhel/9/
+214         IN PTR        guest1.lab.example.com.
+233         IN PTR        guest4.lab.example.com.
+231         IN PTR        guest5.lab.example.com.
+; more VMs
+3           IN PTR    satellite1.lab.example.com.
+7           IN PTR      control1.lab.example.com.
+8           IN PTR          hub1.lab.example.com.
+9           IN PTR    execution1.lab.example.com.
+12          IN PTR         name1.lab.example.com.
+17          IN PTR       antora1.lab.example.com.
+18          IN PTR      jenkins1.lab.example.com.
+19          IN PTR      capsule1.lab.example.com.
+20          IN PTR      builder2.lab.example.com.
+21          IN PTR      control2.lab.example.com.
+22          IN PTR          hub2.lab.example.com.
+;
+; https://github.com/nickhardiman/summit_OD1226
+13          IN PTR          git1.lab.example.com.
+14          IN PTR         repo1.lab.example.com.
+15          IN PTR      builder1.lab.example.com.
+16          IN PTR   controller1.lab.example.com.
+;131         IN PTR       target1.lab.example.com.
+245         IN PTR          bmc1.lab.example.com.
+;
+; openshift 
+217   IN    PTR            api.ocp.example.com.
+217   IN    PTR        api-int.ocp.example.com.
+;
+; physical machines
+195         IN PTR         host1.lab.example.com.
+135         IN PTR         host2.lab.example.com.
+131         IN PTR         host3.lab.example.com.
+186         IN PTR           fb1.lab.example.com.
+243         IN PTR           ns1.lab.example.com.
+245         IN PTR ILOCNX15200K1.lab.example.com.
+201         IN PTR          rpi4.lab.example.com.
+

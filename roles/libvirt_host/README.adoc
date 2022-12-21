@@ -1,0 +1,91 @@
+= code to set up the hypervisor
+Nick Hardiman 
+:source-highlighter: highlight.js
+:revdate: 19-07-2022
+
+This role sets up a libvirt environment on a fresh RHEL 9 host. 
+
+The role creates these resources. 
+I haven't got around to writing something to delete them and return to a shiny new state.
+
+* libvirt volume storage pool _images_. This is the default that would get created anyway. ISO files and disk images go here.
+* libvirt network _public0_. Virtual machines that serve the network go here. I don't touch the default NAT network _default_.
+* libvirt networks _private0_ and _private1_. These are for experiments with administering those hard-to-reach places.
+
+I wrote this role to help me decipher https://libvirt.org/daemons.html.
+Try the libvirt-guest role after this (https://github.com/nickhardiman/libvirt-guest).
+
+These files turn a RHEL server into a KVM hypervisor and ansible control node.
+Starting point: 
+
+* a workstation, like a laptop
+* a machine (a physical machine) with a fresh install of RHEL. Minimal install, no ansible, no git, no nothing much.
+
+
+
+== run
+
+. Install RHEL on host1.
+. Log into host1. My user account is fine, the Ansible playbook will ask for the root password.
+. Download and run this script
+```
+curl -o - https://raw.githubusercontent.com/nickhardiman/machine-host1/main/machine-host1-configure.sh | bash -x
+```
+
+== what is host1
+
+Host1 is one of the PCs in my home lab.
+It is the hypervisor that hosts a bunch of VMs (virtual machines). 
+The physical machine host1 will be described in mind-numbing detail at https://hardiman.consulting/, assuming I ever have free time ever again.
+
+```
+my workstation --> host1 <-- GitHub 
+```
+
+* machine-hypervisor.sh: the shell script to kick off the setup process, run on the hypervisor.
+* machine-hypervisor.yml: Ansible playbook for the hypervisor, run by the script
+* machine-workstation.sh: possibly useless shell script to run on my workstation
+
+== todo
+
+Way too much.
+
+
+== Requirements
+
+A physical machine running RHEL 9. 
+
+To run the "myfirstvm" test playbook below, you need this 
+ready-made KVM file _/var/lib/libvirt/images/rhel-8.2-x86_64-kvm.qcow2_. Download this from https://access.redhat.com/downloads/. Sign up for free at https://developers.redhat.com/ to get access.
+
+
+== Role Variables
+
+It's early days, so everything is hard-coded. 
+
+== Dependencies
+
+community.libvirt
+
+== Example
+
+Create and destroy a VM. 
+
+```
+sudo ansible-playbook libvirt-host/tests/vm-myfirstvm.yml
+```
+
+Remove config privbr0
+
+```
+sudo ansible-playbook libvirt-host/tasks/no-linux-bridge-privbr0.yml
+```
+
+== License
+
+BSD
+
+== Author Information
+
+Nick Hardiman
+

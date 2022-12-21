@@ -1,0 +1,76 @@
+---
+
+# !!! 
+# add some kind of check and short circuit here 
+# if the VM has already been created and looks fine, this is all pointless
+#
+# use FQDN for domain name, not just host name
+#
+# check for a cached storage file. 
+#   "/var/lib/libvirt/images/{{ host }}-base.qcow2"
+# don't bother reinstalling if it exists. 
+
+
+- name: make a kickstart file
+  ansible.builtin.template:
+    src: "{{ kickstart_template }}"
+    dest: "{{ kickstart_path }}/{{ kickstart_file }}"
+    owner: root
+    group: root
+    mode: '0644'
+
+# define and launch the guest
+#
+- name: make a script
+  ansible.builtin.template:
+    src: kvm-install.sh.j2
+    dest: "{{ kickstart_path }}/{{ host }}-install.sh"
+    owner: root
+    group: root
+    mode: '0744'
+
+- name: create
+  ansible.builtin.command:
+    cmd: "{{ kickstart_path }}/{{ host }}-install.sh"
+  register: r_virt_install
+  # !!! fails when disk already exists. 
+  # Could do with a module to compare VM against requested state.
+  ignore_errors: yes
+
+- name: display virt-install result
+  ansible.builtin.debug:
+    var: r_virt_install
+
+
+# assume a failure means the storage file is created and cached
+#
+- name: wait for the vm to shut down
+  community.libvirt.virt:
+    command: status
+    name: "{{ host }}"
+  register: r_virt_status
+  until: r_virt_status['status'] == 'shutdown'
+  retries: 20
+  delay: 25 
+  when: r_virt_install['failed'] == false
+
+
+- name: cache the storage file
+  ansible.builtin.copy:
+      src: "/var/lib/libvirt/images/{{ host }}.qcow2"
+      remote_src: yes
+      dest: "/var/lib/libvirt/images/{{ host }}-base.qcow2"
+      owner: qemu
+      group: qemu
+      mode: '0644'
+  when: r_virt_install['failed'] == false
+
+
+- name: remove temporary files
+  ansible.builtin.file:
+    name: "{{ item }}"
+    state: absent
+  loop:
+    - "{{ kickstart_path }}/{{ kickstart_file }}"
+    - "{{ kickstart_path }}/{{ host }}-install.sh"
+

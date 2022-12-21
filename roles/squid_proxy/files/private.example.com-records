@@ -1,0 +1,22 @@
+$TTL 3H
+@    IN SOA    @ root.lab.example.com (
+                    0    ; serial
+                    1D    ; refresh
+                    1H    ; retry
+                    1W    ; expire
+                    3H )    ; minimum
+; these records are names and addresses for private.example.com
+               IN NS   name1.lab.example.com.
+               A       192.168.1.12
+               AAAA    fdaa:bbcc:ddee:0:5054:ff:fe00:12
+;
+; virtual machines
+; https://hardiman.consulting/rhel/9/
+gateway1       IN A    192.168.152.1
+guest2         IN A    192.168.152.72
+gateway2       IN A    192.168.162.1
+guest2-eth1    IN A    192.168.162.114
+guest3         IN A    192.168.162.115
+; more VMs
+capsule1       IN A    192.168.152.74
+
