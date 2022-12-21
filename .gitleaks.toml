@@ -2,6 +2,7 @@
   description = "Allowlist"
   files = [
     '''ansible\.cfg$''',
-    '''defaults/main\.yml$''',
+    '''roles/managed_node/defaults/main\.yml$''',
+    '''roles/local_repo_supplier/files/1234567890123456789-key\.pem$''',
   ]
 

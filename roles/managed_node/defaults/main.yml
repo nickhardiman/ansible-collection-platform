@@ -2,30 +2,18 @@
 # defaults file for ansible-target
 managed_node_user: ansible_user
 managed_node_group: ansible_user
+# This isn't a real key. 
+# Generate a new pair, replace these values, and encrypt this file.
 managed_node_public_key: |
-  ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDDGo+elnDQuTWj5iYvkYgW0UJPsAXhS4dgX+vOXyabWePs+L+6/uTi74lnotRlP6ffpw5IHrCafxDoGyElpcKsCbRrsELO/+dLZCi4H+TWcWNm3Z0/ZyxZO8+fJpxx0PFm3F2qDS/8Ld+7CO2Yiy6MGEVrnQnmYWb+AB/djbzh/YFHl5VXsLCH7UIucY5FT2KcIVCWh/vDX4CBjWyAU4TdOjgdpQJ95YfOnny8pFaZNmJxkqUYqqEU7tmzIzLnJlZWfqxlHJuahmVofyUF8ODGsRP/NvFmJBSV5sTB4m9zqYpROXGDHBuF/DAHVDpkXpadvXqiRVcsZxCsOjqwFATtFWIzapC/Wlt0e0Buo/7rhx+tpPdwslmXIdGO1IaqN6+HQ9yjqL7IIVITfNt3Vb8ZBb1IulDcPgbei+UATAwnvszA/bRzfps4ncyS1AMyByfOUmczYT+/FO8PjiDiv9n3V7lU7i8esDBonbuFjlAe/BsnhLCHlEgDTicLyAZYYO0= pubkey for ansible
+  ssh-rsa AcKsCbRrsELO/+dLZCi4H+TWcWNm3Z0/ZyxZO8+fJpxx0PFm3F2qDS/8Ld+7CO2Yiy6MGEVrnQnmYWb+AB/djbzh/YFHl5VXsLCH7UIucY5FT2KcIVCWh/vDX4CBjWyAU4TdOjgdpQJ95YfOnny8pFaZNmJxkqUYqqEU7tmzIzLnJlZWfqxlHJuahmVofyUF8ODGsRP/NvFmJBSV5sTB4m9zqYpROXGDHBuF/DAHVDpkXpadvXqiRVcsZxCsOjqwFATtFWIzapC/Wlt0e0Buo/7rhx+tpPdwslmXIdGO1IaqN6+HQ9yjqL7IIVITfNt3Vb8ZBb1IulDcPgbei+UATAwnvszA/bRzfps4ncyS1AMyByfOUmczYT+/FO8PjiDiv9n3V7lU7i8esDBonbuFjlAe/BsnhLCHlEgDTicLyAZYYO0= pubkey for ansible
 
 # ssh-copy-id insists on public key files ending in .pub
+# This isn't a real key.
 control_node_public_key_file: /home/nick/.ssh/ansible-key.pub
 control_node_private_key_file: /home/nick/.ssh/ansible-key.priv
 control_node_private_key: |
   -----BEGIN OPENSSH PRIVATE KEY-----
   b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAABlwAAAAdzc2gtcn
-  NhAAAAAwEAAQAAAYEAwxqPnpZw0Lk1o+YmL5GIFtFCT7AF4UuHYF/rzl8mm1nj7Pi/uv7k
-  4u+JZ6LUZT+n36cOSB6wmn8Q6BshJaXCrAm0a7BCzv/nS2QouB/k1nFjZt2dP2csWTvPny
-  accdDxZtxdqg0v/C3fuwjtmIsujBhFa50J5mFm/gAf3Y284f2BR5eVV7Cwh+1CLnGORU9i
-  nCFQlof7w1+AgY1sgFOE3To4HaUCfeWHzp58vKRWmTZicZKlGKqhFO7ZsyMy5yZWVn6sZR
-  ybmoZlaH8lBfDgxrET/zbxZiQUlebEweJvc6mKUTlxgxwbhfwwB1Q6ZF6Wnb16okVXLGcQ
-  rDo6sBQE7RViM2qQv1pbdHtAbqP+64cfraT3cLJZlyHRjtSGqjevh0Pco6i+yCFSE3zbd1
-  W/GQW9SLpQ3D4G3ovlAEwMJ77MwP20c36bOJ3MktQDMgcnzlJnM2E/vxTvD44g4r/Z91e5
-  VO4vHrAwaJ27hY5QHvwbJ4Swh5RIA04nC8gGWGDtAAAFkI/PaK+Pz2ivAAAAB3NzaC1yc2
-  EAAAGBAMMaj56WcNC5NaPmJi+RiBbRQk+wBeFLh2Bf685fJptZ4+z4v7r+5OLviWei1GU/
-  p9+nDkgesJp/EOgbISWlwqwJtGuwQs7/50tkKLgf5NZxY2bdnT9nLFk7z58mnHHQ8WbcXa
-  oNL/wt37sI7ZiLLowYRWudCeZhZv4AH92NvOH9gUeXlVewsIftQi5xjkVPYpwhUJaH+8Nf
-  gIGNbIBThN06OB2lAn3lh86efLykVpk2YnGSpRiqoRTu2bMjMucmVlZ+rGUcm5qGZWh/JQ
-  Xw4MaxE/828WYkFJXmxMHib3OpilE5cYMcG4X8MAdUOmRelp29eqJFVyxnEKw6OrAUBO0V
-  YjNqkL9aW3R7QG6j/uuHH62k93CyWZch0Y7Uhqo3r4dD3KOovsghUhN823dVvxkFvUi6UN
-  w+Bt6L5QBMDCe+zMD9tHN+mzidzJLUAzIHJ85SZzNhP78U7w+OIOK/2fdXuVTuLx6wMGid
   u4WOUB78GyeEsIeUSANOJwvIBlhg7QAAAAMBAAEAAAF/QqR6oyLAEP1rcZCdeoWtL3NniH
   te3CQpUqWqAreaIwSt1ieTVi/zxgJFCXaxh+QaAbzx6wXl98NvdLx6QLclOZ6IyVxrroIs
   m7BhxoLliz3amdanUY8lQY6eXL5+P/CQvZHdiP+i1it/6ypab90a0E3r2kgfNgQPRnrEZ7
