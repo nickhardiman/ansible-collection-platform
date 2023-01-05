@@ -5,7 +5,7 @@
 namespace: nick
 
 # The name of the collection. Has the same character restrictions as 'namespace'
-name: homelab
+name: platform
 
 # The version of the collection. Must be compatible with semantic versioning
 version: 1.0.0
