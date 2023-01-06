@@ -1,0 +1,66 @@
+#
+# /usr/share/doc/rhel-system-roles/network/example-bridge_with_vlan-playbook.yml 
+# Role creates a linux bridge
+# pubbr0
+# Role creates nmcli config things 
+# pubbr0          bridge
+# pubbr0-enp2s0f0 ethernet
+#
+# The role does something more or less like these CLI commands. 
+# # create a bridge device
+# nmcli con add ifname pubbr0 type bridge
+# nmcli con up pubbr0
+# # connect ethernet port to bridge
+# nmcli con down enp2s0f0
+# nmcli con add type bridge-slave ifname enp2s0f0 master pubbr0
+# nmcli con up pubbr0
+#
+# delete                      
+# sudo nmcli con delete pubbr0-enp2s0f0
+# sudo nmcli con delete pubbr0
+
+- name: Install RPM package
+  dnf:
+    name: rhel-system-roles
+    state: present
+
+# Assume a simple machine with only one ethernet port.
+- name: find the network interface name
+  set_fact:
+    ethernet_port: "{{ ansible_facts['default_ipv4']['interface'] }}"
+
+- name: display the interface name
+  debug:
+    var: ethernet_port
+
+# use gather_facts to set ansible_python
+- name: use rhel-system-role network
+  vars:
+    network_connections:
+      #
+      # Create a bridge profile
+      - name: pubbr0
+        state: up
+        type: bridge
+        #interface_name: pubbr0 # defaults to the connection name
+        ip:
+          dhcp4: yes
+          auto6: yes
+      #
+      # set an ethernet port to the bridge
+      - name: "pubbr0-{{ ethernet_port }}"
+        state: up
+        type: ethernet
+        interface_name: "{{ ethernet_port }}"
+        controller: pubbr0
+        #controller: public-bridge
+        port_type: bridge
+  include_role:
+    name: rhel-system-roles.network
+
+# check
+ # ip -brief link show type bridge
+ # ip route
+ # nmcli con
+ # nmcli device status
+

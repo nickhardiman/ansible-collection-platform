@@ -1,0 +1,36 @@
+# https://docs.ansible.com/ansible/latest/collections/community/libvirt/virt_net_module.html
+#
+# CLI commands
+# virsh net-define file.xml
+# virsh net-start public0
+# virsh net-autostart public0
+
+- name: install RPM packages
+  dnf:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - python3-libvirt
+    - python3-lxml
+
+# Define a new network
+- community.libvirt.virt_net:
+    command: define
+    name: public0
+    xml: '{{ lookup("file", "net-pubbr0.xml") }}'
+
+# Start a network
+- community.libvirt.virt_net:
+    command: create
+    name: public0
+
+# Ensure that a network is active (needs to be defined and built first)
+- community.libvirt.virt_net:
+    state: active
+    name: public0
+
+# Ensure that a given network will be started at boot
+- community.libvirt.virt_net:
+    autostart: yes
+    name: public0
+

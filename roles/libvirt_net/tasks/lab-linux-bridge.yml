@@ -19,14 +19,9 @@
 
 # check
  # ip -brief link show type bridge
- # ip -brief link show type dummy
  # ip route
  # nmcli con
  # nmcli device status
 
-# delete
- # sudo nmcli con delete member-dummy0
- # sudo nmcli con delete dummy-dummy0
- # sudo nmcli con delete bridge-test0
 
 
