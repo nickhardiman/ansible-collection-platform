@@ -1,7 +1,17 @@
 Role Name
 =========
 
-A brief description of the role goes here.
+
+Assume a simple machine with only one ethernet port.
+
+The network role is not the idempotent role model it shoud be. 
+It can disconnect ports from an existing bridge.
+Work around this with a bridge check.
+If the default IPv4 interface name is pubbr0 rather than something like enp2s0f0, 
+assume this work has already been done and
+the bridge to the outside world already exists.
+
+The libvirt modules are better behaved.
 
 Requirements
 ------------

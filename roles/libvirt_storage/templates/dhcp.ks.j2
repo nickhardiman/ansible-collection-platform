@@ -21,7 +21,7 @@ timezone Europe/London --utc
 keyboard --vckeymap=gb
 
 # network
-network --device=enp1s0 --bootproto=static --ip={{ net_prefix }}.4 --netmask=255.255.255.0 --gateway={{ net_prefix }}.1 --activate
+network --device=enp1s0 --bootproto=static --ip={{ lab_net_prefix }}.4 --netmask=255.255.255.0 --gateway={{ lab_net_prefix }}.1 --activate
 network  --hostname={{ fqdn }}
 
 # licences and repos

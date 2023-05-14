@@ -1,27 +1,17 @@
-
-# use gather_facts to set ansible_python
-# Create bridge bridge-{{ name }}
-# and nmcli connection config bridge-{{ name }}
+# Create bridge and nmcli connection config.
+# For CLI equivalents, see comments in public-linux-bridge.yml
 
 - name: create a bridge using rhel-system-role network
   vars:
     network_connections:
-      - name: "{{ bridge_nmcli_name }}"
+      - name: "{{ lab_nmcli_name }}"
         state: up
         type: bridge
-        interface_name: "{{ bridge_device_name }}"
+        interface_name: "{{ lab_bridge_name }}"
         ip:
           address:
-          - "{{ bridge_ip_cidr }}"
-        #mac: "{{ bridge_mac }}"
+          - "{{ lab_bridge_ip_cidr }}"
+        #mac: "{{ lab_bridge_mac }}"
   include_role:
     name: rhel-system-roles.network
-
-# check
- # ip -brief link show type bridge
- # ip route
- # nmcli con
- # nmcli device status
-
-
 

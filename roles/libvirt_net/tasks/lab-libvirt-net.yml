@@ -12,22 +12,22 @@
 # Define a new network
 - community.libvirt.virt_net:
     command: define
-    name: "{{ libvirt_net_name }}"
-    xml: '{{ lookup("template", libvirt_net_name + ".xml") }}'
+    name: "{{ lab_libvirt_name }}"
+    xml: '{{ lookup("template", "net-lab.xml") }}'
 
 # Start a network
 - community.libvirt.virt_net:
     command: create
-    name: "{{ libvirt_net_name }}"
+    name: "{{ lab_libvirt_name }}"
 
 # Ensure that a network is active (needs to be defined and built first)
 - community.libvirt.virt_net:
     state: active
-    name: "{{ libvirt_net_name }}"
+    name: "{{ lab_libvirt_name }}"
 
 # Ensure that a given network will be started at boot
 - community.libvirt.virt_net:
     autostart: yes
-    name: "{{ libvirt_net_name }}"
+    name: "{{ lab_libvirt_name }}"
 
 

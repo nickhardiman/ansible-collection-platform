@@ -1,13 +1,18 @@
 ---
 # defaults file for libvirt_net
 
-# network
-net_short_name: lab
-net_prefix: "192.168.134"
-libvirt_net_name: "net-{{ short_name }}"
-mac_prefix: "52:54:00:02"
-bridge_mac: "{{ mac_prefix }}:00:01"
-bridge_ip_cidr: "{{ net_prefix }}.1/24"
-bridge_nmcli_name: "bridge-{{ short_name }}"
-bridge_device_name: "br{{ short_name }}"
+# lab network
+lab_net_short_name: lab
+lab_libvirt_name:   "net{{ lab_net_short_name }}0"
+lab_nmcli_name: "bridge-{{ lab_net_short_name }}0"
+lab_bridge_name:     "br{{ lab_net_short_name }}0"
+lab_bridge_mac:        "{{ lab_mac_prefix }}:00:01"
+lab_bridge_ip_cidr:    "{{ lab_net_prefix }}.1/24"
+lab_net_prefix: "192.168.134"
+lab_mac_prefix: "52:54:00:02"
 
+# public network
+public_net_short_name: public
+public_libvirt_name:   "net{{ public_net_short_name }}0"
+public_nmcli_name: "bridge-{{ public_net_short_name }}0"
+public_bridge_name:     "br{{ public_net_short_name }}0"

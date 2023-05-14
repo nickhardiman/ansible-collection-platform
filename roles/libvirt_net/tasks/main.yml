@@ -6,7 +6,7 @@
 # The network role is not the idempotent role model it shoud be. 
 # It can disconnect ports from an existing bridge.
 # Work around this with a bridge check.
-# If the default IPv4 interface name is pubbr0 rather than something like enp2s0f0, 
+# If the default IPv4 interface name is brpublic0 rather than something like enp2s0f0, 
 # assume this work has already been done and
 # the bridge to the outside world already exists.
 #
@@ -17,23 +17,27 @@
     ethernet_port: "{{ ansible_facts['default_ipv4']['interface'] }}"
 - debug: 
     var: ethernet_port
-- name: define the public bridge
+
+- name: "define the public bridge {{ public_bridge_name }}"
   include_tasks: public-linux-bridge.yml
-  when: ethernet_port != "pubbr0"
-- include_tasks: public-libvirt-net.yml
-  #when: ethernet_port != "pubbr0"
+  when: ethernet_port != "{{ public_bridge_name }}"
+
+- name: "define the libvirt network {{ public_libvirt_name }}"
+  include_tasks: public-libvirt-net.yml
 
 # If the lab bridge is already active, 
 # assume this work has already been done.
 - name: Look for this lab bridge device.  
   debug: 
-    var: bridge_device_name
+    var: lab_bridge_name
 - name: is the bridge active
   set_fact:
-    lab_bridge_active: "{{ ansible_facts[bridge_device_name]['active'] | default('false') | bool }}"
-- name: define the lab bridge
+    lab_bridge_active: "{{ ansible_facts[lab_bridge_name]['active'] | default('false') | bool }}"
+
+- name: "define the lab bridge {{ lab_bridge_name }}"
   include_tasks: lab-linux-bridge.yml
   when: not lab_bridge_active
-- include_tasks: lab-libvirt-net.yml
-  #when: not lab_bridge_active
+
+- name: "define the libvirt network {{ lab_libvirt_name }}"
+  include_tasks: lab-libvirt-net.yml
 
