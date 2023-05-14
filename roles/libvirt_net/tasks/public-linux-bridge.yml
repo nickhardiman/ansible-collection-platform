@@ -42,20 +42,22 @@
     network_connections:
       #
       # Create a bridge profile
-      - name: "{{ public_bridge_name }}"
+      - name: "{{ public_nmcli_name }}"
         state: up
         type: bridge
+        interface_name: "{{ public_bridge_name }}"
+
         #interface_name defaults to the connection name
         ip:
           dhcp4: yes
           auto6: yes
       #
       # set an ethernet port to the bridge
-      - name: "{{ public_bridge_name }}-{{ ethernet_port }}"
+      - name: "{{ public_nmcli_name }}-{{ ethernet_port }}"
         state: up
         type: ethernet
         interface_name: "{{ ethernet_port }}"
-        controller: "{{ public_bridge_name }}"
+        controller: "{{ public_nmcli_name }}"
         port_type: bridge
   include_role:
     name: rhel-system-roles.network
