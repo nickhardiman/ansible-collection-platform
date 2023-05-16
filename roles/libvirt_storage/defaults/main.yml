@@ -25,10 +25,13 @@ lv_var: 13312
 # network
 # MAC address list here
 #   https://hardiman.consulting/rhel/9/set-up/host1-libvirt-network.html
+public_mac_prefix: "52:54:00:00"
+lab_net_prefix: "192.168.134"
+lab_mac_prefix: "52:54:00:02"
 nics: 
 -  
   name: enp1s0 
-  mac: "52:54:00:00:00:99" 
+  mac: "{{ public_mac_prefix }}:00:99" 
   net: public0 
 
 # OS
