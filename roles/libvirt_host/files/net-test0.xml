@@ -1,6 +1,0 @@
-<network>
-  <name>net-test0</name>
-  <forward mode='bridge'/>
-  <bridge name='test0'/>
-</network>
-

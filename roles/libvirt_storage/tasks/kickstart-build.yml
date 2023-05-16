@@ -4,10 +4,7 @@
 # add some kind of check and short circuit here 
 # if the VM has already been created and looks fine, this is all pointless
 #
-# use FQDN for domain name, not just host name
 #
-
-
 
 - name: make a kickstart file
   ansible.builtin.template:
@@ -22,14 +19,14 @@
 - name: make a script
   ansible.builtin.template:
     src: kvm-install.sh.j2
-    dest: "{{ kickstart_path }}/{{ host }}-install.sh"
+    dest: "{{ kickstart_path }}/{{ fqdn }}-install.sh"
     owner: root
     group: root
     mode: '0744'
 
 - name: create
   ansible.builtin.command:
-    cmd: "{{ kickstart_path }}/{{ host }}-install.sh"
+    cmd: "{{ kickstart_path }}/{{ fqdn }}-install.sh"
   register: r_virt_install
   # !!! fails when disk already exists. 
   # Could do with a module to compare VM against requested state.
@@ -45,7 +42,7 @@
 - name: wait for the vm to shut down
   community.libvirt.virt:
     command: status
-    name: "{{ host }}"
+    name: "{{ fqdn }}"
   register: r_virt_status
   until: r_virt_status['status'] == 'shutdown'
   retries: 20
@@ -60,5 +57,5 @@
     state: absent
   loop:
     - "{{ kickstart_path }}/{{ kickstart_file }}"
-    - "{{ kickstart_path }}/{{ host }}-install.sh"
+    - "{{ kickstart_path }}/{{ fqdn }}-install.sh"
 

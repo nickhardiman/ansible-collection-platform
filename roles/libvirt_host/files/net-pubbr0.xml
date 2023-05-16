@@ -1,6 +1,0 @@
-<!-- libvirt config for creating a network bridge -->
-<network>
-  <name>public0</name>
-  <forward mode="bridge"/>
-  <bridge name="pubbr0" />
-</network>

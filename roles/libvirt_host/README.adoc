@@ -9,8 +9,8 @@ The role creates these resources.
 I haven't got around to writing something to delete them and return to a shiny new state.
 
 * libvirt volume storage pool _images_. This is the default that would get created anyway. ISO files and disk images go here.
-* libvirt network _public0_. Virtual machines that serve the network go here. I don't touch the default NAT network _default_.
-* libvirt networks _private0_ and _private1_. These are for experiments with administering those hard-to-reach places.
+* libvirt network _netpublic0_. Virtual machines that serve the network go here. I don't touch the default NAT network _default_.
+* libvirt network _netlab0_, for experiments with administering those hard-to-reach places.
 
 I wrote this role to help me decipher https://libvirt.org/daemons.html.
 Try the libvirt-guest role after this (https://github.com/nickhardiman/libvirt-guest).

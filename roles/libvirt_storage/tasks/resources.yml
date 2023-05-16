@@ -11,8 +11,7 @@
 - name: store machine config
   ansible.builtin.file:
     path: ~/libvirt
-    type: directory
-    state: present
+    state: directory
 
 - name: store machine config
   ansible.builtin.command:
