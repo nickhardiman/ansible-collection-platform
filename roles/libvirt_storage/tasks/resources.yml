@@ -1,20 +1,20 @@
 - name: cache the storage file
   ansible.builtin.copy:
-      src: "/var/lib/libvirt/images/{{ host }}.qcow2"
+      src: "/var/lib/libvirt/images/{{ fqdn }}.qcow2"
       remote_src: yes
-      dest: "/var/lib/libvirt/images/{{ host }}-base.qcow2"
+      dest: "/var/lib/libvirt/images/{{ fqdn }}-base.qcow2"
       owner: qemu
       group: qemu
       mode: '0644'
   when: r_virt_install['failed'] == false
 
-- name: store machine config
+- name: create a directory for machine config
   ansible.builtin.file:
     path: ~/libvirt
     state: directory
 
 - name: store machine config
   ansible.builtin.command:
-    cmd: "virsh dumpxml {{ host }}"
+    cmd: "virsh dumpxml {{ fqdn }}"
     chdir: ~/libvirt
-    creates: "~/libvirt/{{ host }}.xml"
+    creates: "~/libvirt/{{ fqdn }}.xml"

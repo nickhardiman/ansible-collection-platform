@@ -24,6 +24,7 @@
     group: root
     mode: '0744'
 
+# assume a failure means the storage file is created and cached
 - name: create
   ansible.builtin.command:
     cmd: "{{ kickstart_path }}/{{ fqdn }}-install.sh"
@@ -36,9 +37,8 @@
   ansible.builtin.debug:
     var: r_virt_install
 
-
-# assume a failure means the storage file is created and cached
-#
+# wait for install to complete. 
+# time out after 20 retries * 30 seconds = 10 minutes
 - name: wait for the vm to shut down
   community.libvirt.virt:
     command: status
@@ -46,7 +46,7 @@
   register: r_virt_status
   until: r_virt_status['status'] == 'shutdown'
   retries: 20
-  delay: 25 
+  delay: 30 
   when: r_virt_install['failed'] == false
 
 # clean up

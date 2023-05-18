@@ -46,7 +46,7 @@ RPMs: []
 # playbook copies kvm-guest.ks to /var/tmp/
 # !!! replace /var/tmp with a temporary ansible working directory
 kickstart_path: "/var/tmp"
-kickstart_file: "{{ host }}.ks"
+kickstart_file: "{{ fqdn }}.ks"
 kickstart_template: kvm-guest.ks.j2
 
 # accounts

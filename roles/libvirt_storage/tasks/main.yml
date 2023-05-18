@@ -1,7 +1,7 @@
 ---
 
 # check for a cached storage file. 
-#   "/var/lib/libvirt/images/{{ host }}-base.qcow2"
+#   "/var/lib/libvirt/images/{{ fqdn }}-base.qcow2"
 # don't bother reinstalling if it exists. 
 
 # check 
@@ -9,9 +9,9 @@
 # assume this work has already been done.
 - name: Look for the machine volume.  
   stat: 
-    path: "/var/lib/libvirt/images/{{ host }}-base.qcow2"
+    path: "/var/lib/libvirt/images/{{ fqdn }}-base.qcow2"
   register: r_volume
-- name: "does the volume '/var/lib/libvirt/images/{{ host }}-base.qcow2' already exist?"
+- name: "does the volume '/var/lib/libvirt/images/{{ fqdn }}-base.qcow2' already exist?"
   set_fact:
     volume_file_exists: "{{ r_volume.stat.exists | bool }}"
 - debug:

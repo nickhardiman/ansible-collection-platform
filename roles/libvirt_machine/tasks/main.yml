@@ -5,12 +5,12 @@
 
 - name: start the guest when the host boots up
   community.libvirt.virt:
-    name: "{{ host }}"
+    name: "{{ fqdn }}"
     autostart: yes
 
 - name: restart the VM
   community.libvirt.virt:
-    name: "{{ host }}"
+    name: "{{ fqdn }}"
     state: running
 
 # check
@@ -19,7 +19,7 @@
 
 - name: get domain info
   community.libvirt.virt:
-    name: "{{ host }}"
+    name: "{{ fqdn }}"
     command: info
   register: r_domain_info
 

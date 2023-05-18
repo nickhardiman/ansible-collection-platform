@@ -6,4 +6,3 @@
     path: /etc/hosts
     search_string: "{{ fqdn }}"
     line: "{{ ip_address }}   {{ fqdn }}   {{ host }}"
-
