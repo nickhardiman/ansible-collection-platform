@@ -15,6 +15,6 @@
 
 - name: store machine config
   ansible.builtin.command:
-    cmd: "virsh dumpxml {{ fqdn }}"
+    cmd: "virsh dumpxml {{ fqdn }} > ~/libvirt/{{ fqdn }}.xml"
     chdir: ~/libvirt
     creates: "~/libvirt/{{ fqdn }}.xml"

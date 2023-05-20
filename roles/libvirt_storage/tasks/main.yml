@@ -1,23 +1,8 @@
 ---
 
-# check for a cached storage file. 
-#   "/var/lib/libvirt/images/{{ fqdn }}-base.qcow2"
-# don't bother reinstalling if it exists. 
+# !!! move to libvirt-storage
+- include_tasks: pool-images.yml
+# CDN changed, this approach no longer works.
+#- include_tasks: download-ISO.yml
+# Do something based on download-ISO.sh
 
-# check 
-# If the volume already exists, 
-# assume this work has already been done.
-- name: Look for the machine volume.  
-  stat: 
-    path: "/var/lib/libvirt/images/{{ fqdn }}-base.qcow2"
-  register: r_volume
-- name: "does the volume '/var/lib/libvirt/images/{{ fqdn }}-base.qcow2' already exist?"
-  set_fact:
-    volume_file_exists: "{{ r_volume.stat.exists | bool }}"
-- debug:
-    var: volume_file_exists
-
-- include_tasks: kickstart-build.yml
-  when: not volume_file_exists
-- include_tasks: resources.yml
-  when: not volume_file_exists

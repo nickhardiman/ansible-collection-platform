@@ -25,7 +25,7 @@
 
 - name: display domain info
   debug:
-    var: r_domain_info[host]
+    var: r_domain_info[fqdn]
 
 - name: some kind of smoke test here?
   debug:
