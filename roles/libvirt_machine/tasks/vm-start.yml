@@ -1,0 +1,34 @@
+---
+# reference: 
+# https://docs.ansible.com/ansible/latest/collections/community/libvirt/virt_module.html
+
+# Defining a VM and making is autostart with host. VM will be off after this task
+- name: Define vm from xml and set autostart
+  community.libvirt.virt:
+    command: define
+    xml: "{{ lookup('file', '~/root/libvirt/' + fqdn + '.xml') }}"
+
+- name: start the guest when the host boots up
+  community.libvirt.virt:
+    name: "{{ fqdn }}"
+    autostart: yes
+
+- name: start the VM
+  community.libvirt.virt:
+    name: "{{ fqdn }}"
+    state: running
+
+# check
+# These tasks use libvirt only.
+# They don't check anything at the OS level, such as waiting for a connection. 
+
+- name: get domain info
+  community.libvirt.virt:
+    name: "{{ fqdn }}"
+    command: info
+  register: r_domain_info
+
+- name: display domain info
+  debug:
+    var: r_domain_info[fqdn]
+
