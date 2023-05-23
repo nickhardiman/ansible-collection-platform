@@ -13,6 +13,7 @@
     path: ~/libvirt
     state: directory
 
+# !!! register stdout then dump to remote file
 - name: store machine config
   ansible.builtin.command:
     cmd: "virsh dumpxml {{ fqdn }} > ~/libvirt/{{ fqdn }}.xml"

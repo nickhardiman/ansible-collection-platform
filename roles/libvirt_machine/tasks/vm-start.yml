@@ -2,11 +2,31 @@
 # reference: 
 # https://docs.ansible.com/ansible/latest/collections/community/libvirt/virt_module.html
 
+- name: copy the cached storage file
+  ansible.builtin.copy:
+      src: "/var/lib/libvirt/images/{{ fqdn }}-base.qcow2"
+      remote_src: yes
+      dest: "/var/lib/libvirt/images/{{ fqdn }}.qcow2"
+      owner: qemu
+      group: qemu
+      mode: '0644'
+  
 # Defining a VM and making is autostart with host. VM will be off after this task
+- name: Find out what the remote machine's mounts are
+  ansible.builtin.slurp:
+    src: "{{ '~/libvirt/' + fqdn + '.xml' }}"
+  register: r_xml
+
+- name: Print returned information
+  ansible.builtin.debug:
+    msg: "{{ r_xml['content'] | b64decode }}"
+
 - name: Define vm from xml and set autostart
   community.libvirt.virt:
     command: define
-    xml: "{{ lookup('file', '~/root/libvirt/' + fqdn + '.xml') }}"
+    xml: "{{ r_xml['content'] | b64decode }}"
+    # can't use this lookup, file is not on local machine. 
+    #xml: "{{ lookup('file', '~/libvirt/' + fqdn + '.xml') }}"
 
 - name: start the guest when the host boots up
   community.libvirt.virt:

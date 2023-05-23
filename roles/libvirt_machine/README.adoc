@@ -1,20 +1,26 @@
-= libvirt-guest, an Ansible role
+= libvirt_machine, an Ansible role
 
-Create a libvirt domain named "kvm-guest". 
+Create a libvirt domain.
+
 
 The role creates a KVM guest, installs RHEL 9.0 (minimal), configures a few things then powers off (the VM should reboot, but a QEMU option prevents that).
 This role is simple, with plenty of hardcoded values in both the tasks and kickstart file _templates/kvm-guest.ks.j2_. 
 I made this role to learn more about the libvirt collection so don't expect polish.
 
-The role creates these resources. 
-Playbook _tests/no-kvm-guest.yml_ deletes them. 
+The role creates libvirt resources.
+Resources are labelled with the FQDN. 
+If the name is kvm-guest.lab.example.com, you get these. 
 
-* kvm-guest - a libvirt domain
-* kvm-guest.qcow2 - a 30GB root disk
+* kvm-guest.lab.example.com - a libvirt domain defined from an XML file ~/libvirt/kvm-guest.xml
+* kvm-guest.lab.example.com.qcow2 - disk volume file, copied from kvm-guest.lab.example.com-base.qcow2
 
 
 
 == Requirements
+
+disk image kvm-guest.lab.example.com-base.qcow2
+
+XML file ~/libvirt/kvm-guest.xml
 
 The libvirt environment installed and running (see https://github.com/nickhardiman/libvirt-host).
 
@@ -31,50 +37,17 @@ Enough free disk space to hold ISOs and the new storage volume (30GiB by default
 For configurable values, see 
 https://github.com/nickhardiman/libvirt-guest/blob/main/defaults/main.yml.
 
+
 == Dependencies
 
 community.libvirt (https://github.com/ansible-collections/community.libvirt)
 
-== Example
 
-=== Create the VM _kvm-guest_.
+== Example with playbook
 
-The playbook exits when the build starts.
-The build takes about 5 minutes, then the VM is powered down. 
-
-```
-mkdir -p ~/ansible/roles
-cd ~/ansible/roles
-git clone https:/github.com/nickhardiman/libvirt-guest.git
-sudo ansible-playbook libvirt-guest/tests/test.yml
-```
-
-Use virsh to check.
-```
-sudo virsh list -all
-sudo virsh console kvm-guest
-```
-
-If you want to login to the console, two accounts are configured. 
-
-* user: root, password: Password;1
-* user: nick, password: Password;1
-
-=== Remove the VM _kvm-guest_.
-
-```
-sudo ansible-playbook libvirt-guest/tests/no-kvm-guest.yml
-```
-
-=== Variations 
-
-Create the VM, register and subscribe.
-```
-sudo ansible-playbook libvirt-guest/tests/test.yml \
-    --extra-var="rhsm_user=my_user"  \
-    --extra-var='rhsm_password=my_password'  \
-    --extra-var="rhsm_pool_id=my_pool_id"
-```
+Create a playbook. 
+There's a pretty complicated one here. 
+https://github.com/nickhardiman/ansible-playbook-lab
 
 Create another VM called _another-vm_ with a bigger disk (40GiB, not 30) and a different MAC address.
 ```
@@ -93,6 +66,24 @@ Install RHEL 8, not 9.
 sudo ansible-playbook libvirt-guest/tests/test.yml  \
     --extra-var="os_variant=rhel8.5"  \
     --extra-var="install_iso=/var/lib/libvirt/images/rhel-8.6-x86_64-dvd.iso"
+```
+
+
+
+== A fiddly example  
+
+Create the VM. 
+
+```
+git clone https:/github.com/nickhardiman/ansible-collection-platform.git
+sudo ANSIBLE_COLLECTIONS_PATHS=.:~/.ansible/collections:/usr/share/ansible/collections ansible-playbook roles/libvirt_volume/tests/test.yml
+sudo ANSIBLE_COLLECTIONS_PATHS=.:~/.ansible/collections:/usr/share/ansible/collections ansible-playbook roles/libvirt_machine/tests/test.yml
+```
+
+Remove the VM.
+
+```
+sudo ANSIBLE_COLLECTIONS_PATHS=.:~/.ansible/collections:/usr/share/ansible/collections ansible-playbook roles/libvirt_machine/tests/no-kvm-guest.yml
 ```
 
 == License

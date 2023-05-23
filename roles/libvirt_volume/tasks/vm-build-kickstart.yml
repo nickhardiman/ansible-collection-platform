@@ -31,6 +31,9 @@
   ansible.builtin.debug:
     var: r_virt_install
 
+# !!! sleep here? 
+# error while evaluating conditional (r_virt_status['status'] == 'shutdown'): 'dict object' has no attribute 'status'.
+
 # wait for install to complete. 
 # time out after 20 retries * 30 seconds = 10 minutes
 - name: wait up to 10 minutes for vm install and shut down
