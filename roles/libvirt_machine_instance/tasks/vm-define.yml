@@ -33,22 +33,3 @@
     name: "{{ fqdn }}"
     autostart: yes
 
-- name: start the VM
-  community.libvirt.virt:
-    name: "{{ fqdn }}"
-    state: running
-
-# check
-# These tasks use libvirt only.
-# They don't check anything at the OS level, such as waiting for a connection. 
-
-- name: get domain info
-  community.libvirt.virt:
-    name: "{{ fqdn }}"
-    command: info
-  register: r_domain_info
-
-- name: display domain info
-  debug:
-    var: r_domain_info[fqdn]
-
