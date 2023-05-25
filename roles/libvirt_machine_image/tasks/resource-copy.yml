@@ -14,7 +14,7 @@
 
 # !!! register stdout then dump to remote file
 - name: store machine config
-  ansible.builtin.command:
+  ansible.builtin.shell:
     cmd: "virsh dumpxml {{ fqdn }} > ~/libvirt/{{ fqdn }}.xml"
     chdir: ~/libvirt
     creates: "~/libvirt/{{ fqdn }}.xml"

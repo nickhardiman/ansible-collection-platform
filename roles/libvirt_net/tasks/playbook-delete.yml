@@ -1,0 +1,25 @@
+---
+- name: delete virtual networks
+  hosts: hypervisor
+  become: yes
+  gather_facts: yes
+
+- name: delete a bridge using rhel-system-role network
+  vars:                      
+    network_connections:     
+      - name: "{{ lab_nmcli_name }}"
+        persistent_state: absent
+  include_role:              
+    name: rhel-system-roles.network
+ 
+
+# stop a network
+- community.libvirt.virt_net:
+    command: destroy
+    name: "{{ lab_libvirt_name }}"
+ 
+# delete a network
+- community.libvirt.virt_net:
+    state: absent
+    name: "{{ lab_libvirt_name }}"
+ 

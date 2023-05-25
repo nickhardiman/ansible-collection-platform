@@ -1,12 +1,34 @@
 ---
 # tasks file for cdn_repo_consumer
 
-- name: Register as user with password and auto-subscribe to available content.
+
+# !!! debug 
+- debug: 
+    var: rhsm_user
+
+
+# error
+#   TimeoutError: [Errno 110] Connection timed out
+# probably means proxy settings are missing. 
+# more lines in /var/log/rhsm/rhsm.log
+#
+- name: "register as user {{ rhsm_user }} and auto-subscribe to content"
   community.general.redhat_subscription:
     state: present
     username: "{{ rhsm_user }}"
     password: "{{ rhsm_password }}"
     auto_attach: true
- 
+    server_proxy_hostname: gateway.lab.example.com
+    server_proxy_port: 3128
+  when: inventory_hostname != "gateway.lab.example.com"
+
+- name: "register as user {{ rhsm_user }} and auto-subscribe to content"
+  community.general.redhat_subscription:
+    state: present
+    username: "{{ rhsm_user }}"
+    password: "{{ rhsm_password }}"
+    auto_attach: true
+  when: inventory_hostname == "gateway.lab.example.com"
+
  
 

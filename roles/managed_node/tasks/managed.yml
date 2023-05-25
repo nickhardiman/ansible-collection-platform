@@ -22,6 +22,9 @@
     dest: "/etc/sudoers.d/{{ managed_node_user }}"
     validate: /usr/sbin/visudo -cf %s
 
+# inventory_hostname is a special variable. 
+# https://docs.ansible.com/ansible/latest/reference_appendices/special_variables.html
+#
 - name: information
   ansible.builtin.debug:
     msg:
