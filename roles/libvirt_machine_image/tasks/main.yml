@@ -18,6 +18,7 @@
     var: volume_file_exists
 
 - block:
+  - ansible.builtin.include_tasks: vm-stop.yml
   - ansible.builtin.include_tasks: resource-copy.yml
   # how about some virt-clone and virt-sysprep ?
   # https://hardiman.consulting/rhel/9/virtual-machine/guest4-clone.html

@@ -19,6 +19,5 @@
 
 - block:
   - ansible.builtin.include_tasks: vm-build-kickstart.yml
-  - ansible.builtin.include_tasks: resources.yml
-  - ansible.builtin.include_tasks: vm-delete.yml
+  - ansible.builtin.include_tasks: vm-start.yml
   when: not volume_file_exists

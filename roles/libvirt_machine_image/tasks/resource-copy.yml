@@ -6,7 +6,6 @@
       owner: qemu
       group: qemu
       mode: '0644'
-  when: r_virt_install['failed'] == false
 
 - name: create a directory for machine config
   ansible.builtin.file:
