@@ -1,0 +1,31 @@
+---
+
+# buggy version of libvirt. 
+# https://bugzilla.redhat.com/show_bug.cgi?id=1742877
+# problem 
+# libvirt.libvirtError: Requested operation is not valid: Setting different SELinux label on /var/lib/libvirt/images/gateway.lab.example.com.qcow2 which is already in use
+# fix
+# echo "remember_owner = 0" >>  /etc/libvirt/qemu.conf
+
+- name: start the VM
+  community.libvirt.virt:
+    name: "{{ fqdn }}"
+    state: running
+
+# check
+# These tasks use libvirt only.
+# They don't check anything at the OS level, such as waiting for a connection. 
+
+- name: get domain info
+  community.libvirt.virt:
+    name: "{{ fqdn }}"
+    command: info
+  register: r_domain_info
+
+- name: display domain info
+  debug:
+    var: r_domain_info[fqdn]
+
+- name: Wait for new server to be ready
+  ansible.builtin.wait_for_connection:
+    timeout: 120

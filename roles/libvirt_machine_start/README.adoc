@@ -1,0 +1,12 @@
+= libvirt_machine_start
+
+A tiny role, mainly separated for troubleshooting. 
+
+Having some trouble with https://docs.ansible.com/ansible/latest/collections/community/libvirt/virt_module.html
+
+[source,shell]
+....
+TASK [nick.platform.libvirt_machine_instance : start the VM] ***********************************************************
+An exception occurred during task execution. To see the full traceback, use -vvv. The error was: libvirt.libvirtError: Requested operation is not valid: Setting different SELinux label on /var/lib/libvirt/images/gateway.lab.example.com.qcow2 which is already in use
+fatal: [gateway.lab.example.com -> host2.lab.example.com]: FAILED! => {"changed": false, "msg": "Requested operation is not valid: Setting different SELinux label on /var/lib/libvirt/images/gateway.lab.example.com.qcow2 which is already in use"}
+....

@@ -21,6 +21,7 @@ timezone Europe/London --utc
 keyboard --vckeymap=gb
 
 # network
+# fixed IP address
 network --device=enp1s0 --bootproto=static --ip={{ lab_net_prefix }}.4 --netmask=255.255.255.0 --gateway={{ lab_net_prefix }}.1 --activate
 network  --hostname={{ fqdn }}
 
@@ -78,7 +79,6 @@ bash-completion
 bind-utils
 mlocate
 nmap-ncat
-python3-cryptography
 vim
 tcpdump
 telnet
@@ -111,9 +111,10 @@ chmod 0600 /home/{{ user_ansible_name }}/.ssh/authorized_keys
 restorecon -vR /home/{{ user_ansible_name }}/.ssh/
 
 # subscription
+# !!! moved to another role
 # use your Red Hat developer account
-/usr/sbin/subscription-manager register --username={{ rhsm_user }} --password='{{ rhsm_password }}'
-/usr/sbin/subscription-manager attach --pool={{ rhsm_pool_id }}
+#/usr/sbin/subscription-manager register --username={{ rhsm_user }} --password='{{ rhsm_password }}'
+#/usr/sbin/subscription-manager attach --pool={{ rhsm_pool_id }}
 
 %end
 

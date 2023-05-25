@@ -38,8 +38,10 @@ nics:
 # OS
 host: kvm-guest
 fqdn: "{{ host }}.lab.example.com"
-install_iso: /var/lib/libvirt/images/rhel-baseos-9.0-x86_64-dvd.iso
-os_variant: rhel9.0
+install_iso: /var/lib/libvirt/images/rhel-9.2-x86_64-dvd.iso
+# Use this command to get the list of accepted OS variants.
+#  virt-install --osinfo list
+os_variant: rhel9.2
 RPMs: []
 
 # kickstart

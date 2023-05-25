@@ -5,13 +5,13 @@
 # don't bother reinstalling if it exists. 
 
 # check 
-# If the volume already exists, 
+# If the instance volume already exists, 
 # assume this work has already been done.
 - name: Look for the machine volume.  
   ansible.builtin.stat: 
-    path: "/var/lib/libvirt/images/{{ fqdn }}-base.qcow2"
+    path: "/var/lib/libvirt/images/{{ fqdn }}.qcow2"
   register: r_volume
-- name: "does the volume '/var/lib/libvirt/images/{{ fqdn }}-base.qcow2' already exist?"
+- name: "does the volume '/var/lib/libvirt/images/{{ fqdn }}.qcow2' already exist?"
   ansible.builtin.set_fact:
     volume_file_exists: "{{ r_volume.stat.exists | bool }}"
 - ansible.builtin.debug:
@@ -19,5 +19,4 @@
 
 - block:
   - ansible.builtin.include_tasks: vm-build-kickstart.yml
-  - ansible.builtin.include_tasks: vm-start.yml
   when: not volume_file_exists
