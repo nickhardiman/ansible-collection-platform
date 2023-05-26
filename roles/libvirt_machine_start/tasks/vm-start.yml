@@ -26,10 +26,13 @@
   ansible.builtin.debug:
     var: r_domain_info[fqdn]
 
-# something wrong here, its not waiting
+# These tasks are delegated to hypervisor. 
+# That's no good here. 
+# We're not interested in the hypervisor being pingable. 
 # https://docs.ansible.com/ansible/latest/collections/ansible/builtin/wait_for_connection_module.html
-- name: "Wait for {{ inventory_hostname }} to be ready"
+- name: "wait for VM {{ inventory_hostname }} to start"
   ansible.builtin.wait_for_connection:
     delay: 30
     timeout: 120
   become: no
+  delegate_to: "{{ inventory_hostname }}"

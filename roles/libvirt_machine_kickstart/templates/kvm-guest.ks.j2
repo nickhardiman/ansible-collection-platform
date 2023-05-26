@@ -113,8 +113,9 @@ chmod 0600 /home/{{ user_ansible_name }}/.ssh/authorized_keys
 restorecon -vR /home/{{ user_ansible_name }}/.ssh/
 
 # subscription
+# !!! moved to another role
 # use your Red Hat developer account
-/usr/sbin/subscription-manager register --username={{ rhsm_user }} --password='{{ rhsm_password }}'
-/usr/sbin/subscription-manager attach --pool={{ rhsm_pool_id }}
+#/usr/sbin/subscription-manager register --username={{ rhsm_user }} --password='{{ rhsm_password }}'
+#/usr/sbin/subscription-manager attach --pool={{ rhsm_pool_id }}
 
 %end

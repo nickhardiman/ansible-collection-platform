@@ -22,7 +22,7 @@
     server_proxy_port: 3128
   when: inventory_hostname != "gateway.lab.example.com"
 
-- name: "register as user {{ rhsm_user }} and auto-subscribe to content"
+- name: "register as user {{ rhsm_user }} and auto-subscribe to content (gateway only)"
   community.general.redhat_subscription:
     state: present
     username: "{{ rhsm_user }}"

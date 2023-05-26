@@ -14,8 +14,10 @@
   ansible.builtin.reboot:
   when: r_dnf['changed'] == true
 
-- name: can we ping the host after the reboot?
+- name: "can we ping {{ inventory_hostname }} after the reboot?"
   ansible.builtin.wait_for_connection:
+    delay: 10
     timeout: 30
+  delegate_to: "{{ inventory_hostname }}"
 
 

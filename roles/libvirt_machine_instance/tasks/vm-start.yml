@@ -19,3 +19,9 @@
   debug:
     var: r_domain_info[fqdn]
 
+- name: "wait for new instance of {{ inventory_hostname }} to be ready"
+  ansible.builtin.wait_for_connection:
+    delay: 10
+    timeout: 120
+  become: no
+  delegate_to: "{{ inventory_hostname }}"
