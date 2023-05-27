@@ -1,6 +1,6 @@
 galaxy_info:
   author: nick
-  description: add DNS records to IPA
+  description: add DNS records to directory
   company: your company (optional)
 
   # If the issue tracker for your role is not on github, uncomment the

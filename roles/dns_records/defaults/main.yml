@@ -2,16 +2,37 @@
 # defaults file 
 lab_net_prefix: "192.168.134"
 lab_mac_prefix: "52:54:00:02"
-
+lab_domain: lab.example.com
+lab_reverse_zone: "134.168.192.in-addr.arpa"
 address:
-- fqdn: gateway.lab.example.com
+- 
+  host: gateway
   mac: "{{ lab_mac_prefix }}:00:03"
-  ip: "{{ lab_net_prefix }}.3"
-- fqdn: id.lab.example.com
+  ip_last_octet: "3"
+  ipv4: "{{ lab_net_prefix + '.3' }}"
+- 
+  host: ipsal
   mac: "{{ lab_mac_prefix }}:00:04"
-  ip: "{{ lab_net_prefix }}.4"
-- fqdn: gateway.lab.example.com
-  mac: "{{ lab_mac_prefix }}:00:03"
-  ip: "{{ lab_net_prefix }}.3"
+  ip_last_octet: "4"
+  ipv4: "{{ lab_net_prefix + '.4' }}"
+- 
+  host: id
+  mac: "{{ lab_mac_prefix }}:00:05"
+  ip_last_octet: "5"
+  ipv4: "{{ lab_net_prefix  + '.5' }}"
+- 
+  host: message
+  mac: "{{ lab_mac_prefix }}:00:06"
+  ip_last_octet: "6"
+  ipv4: "{{ lab_net_prefix  + '.6' }}"
+- 
+  host: monitor
+  mac: "{{ lab_mac_prefix }}:00:07"
+  ip_last_octet: "7"
+  ipv4: "{{ lab_net_prefix  + '.7' }}"
+- 
+  host: git
+  mac: "{{ lab_mac_prefix }}:00:08"
+  ip_last_octet: "8"
+  ipv4: "{{ lab_net_prefix  + '.8' }}"
 
-  HERE

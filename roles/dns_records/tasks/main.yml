@@ -9,7 +9,7 @@
     ipa_pass: Password;1
     state: present
     zone_name: lab.example.com
-    record_name: gateway
+    record_name: "{{ item['host'] }}"
     record_type: 'A'
     record_value: "{{ item['ipv4'] }}"
   loop: "{{ address }}"
@@ -19,8 +19,8 @@
     ipa_host: id.lab.example.com
     ipa_pass: Password;1
     state: present
-    zone_name: 135.168.192.in-addr.arpa
-    record_name: 3
+    zone_name: "{{ lab_reverse_zone }}"
+    record_name: "{{ item['ip_last_octet'] }}"
     record_type: 'PTR'
-    record_value: "{{ item }}"
+    record_value: "{{ item['host'] + '.' + lab_domain }}."
   loop: "{{ address }}"
