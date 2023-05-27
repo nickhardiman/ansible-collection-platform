@@ -1,0 +1,17 @@
+---
+# defaults file 
+lab_net_prefix: "192.168.134"
+lab_mac_prefix: "52:54:00:02"
+
+address:
+- fqdn: gateway.lab.example.com
+  mac: "{{ lab_mac_prefix }}:00:03"
+  ip: "{{ lab_net_prefix }}.3"
+- fqdn: id.lab.example.com
+  mac: "{{ lab_mac_prefix }}:00:04"
+  ip: "{{ lab_net_prefix }}.4"
+- fqdn: gateway.lab.example.com
+  mac: "{{ lab_mac_prefix }}:00:03"
+  ip: "{{ lab_net_prefix }}.3"
+
+  HERE
