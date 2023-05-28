@@ -9,10 +9,10 @@
     ipa_pass: Password;1
     state: present
     zone_name: lab.example.com
-    record_name: "{{ item['host'] }}"
+    record_name: "{{ item }}"
     record_type: 'A'
-    record_value: "{{ item['ipv4'] }}"
-  loop: "{{ address }}"
+    record_value: "{{ address[item]['ipv4'] }}"
+  loop: "{{ address | list }}"
 
 - name: Ensure dns PTR record is present
   community.general.ipa_dnsrecord:
@@ -20,7 +20,7 @@
     ipa_pass: Password;1
     state: present
     zone_name: "{{ lab_reverse_zone }}"
-    record_name: "{{ item['ip_last_octet'] }}"
+    record_name: "{{ address[item]['ip_last_octet'] }}"
     record_type: 'PTR'
-    record_value: "{{ item['host'] + '.' + lab_domain }}."
-  loop: "{{ address }}"
+    record_value: "{{ item + '.' + lab_domain }}."
+  loop: "{{ address | list }}"

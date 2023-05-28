@@ -7,9 +7,12 @@
 # bombs out if already installed
 # !!! check? 
 # /usr/bin/ipa --version
-- name: run installer
-  ansible.builtin.shell:
-    cmd: >
+# 
+# https://access.redhat.com/solutions/4237121
+# auto-reverse option with "ipa-server-install" fail to add reverse zone in IPA DNS.
+- name: define install command 
+  set_fact: 
+    ipa_install_cmd: >
       ipa-server-install  
       --ds-password='Password;1' 
       --admin-password='Password;1' 
@@ -20,8 +23,15 @@
       --forwarder={{ lab_net_prefix }}.3 
       --no-dnssec-validation 
       --auto-reverse  
+      --allow-zone-overlap
       --netbios-name=LAB 
       --unattended
+- debug: 
+    var: ipa_install_cmd
+
+- name: run installer
+  ansible.builtin.shell:
+    cmd: "{{ ipa_install_cmd }}"
   ignore_errors: yes
   register: r_install
 
