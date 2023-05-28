@@ -42,55 +42,26 @@ host gateway.lab.example.com {
 # * gateway address
 #
 group {
-  option domain-name-servers {{ lab_net_prefix }}.5;
-  option routers {{ lab_net_prefix }}.1;
-
-    host dhcp.lab.example.com {
+    option domain-name-servers {{ lab_net_prefix }}.5;
+    option routers {{ lab_net_prefix }}.1;
+    host ipsal.lab.example.com {
         hardware ethernet {{ lab_mac_prefix }}:00:04;
         fixed-address {{ lab_net_prefix }}.4;
     }
-
-    host dns.lab.example.com {
+    host id.lab.example.com {
         hardware ethernet {{ lab_mac_prefix }}:00:05;
         fixed-address {{ lab_net_prefix }}.5;
     }
-
-    # 6 is free 
-    
-    host git.lab.example.com {
+    host message.lab.example.com {
+        hardware ethernet {{ lab_mac_prefix }}:00:06;
+        fixed-address {{ lab_net_prefix }}.6;
+    }
+    host monitor.lab.example.com {
         hardware ethernet {{ lab_mac_prefix }}:00:07;
         fixed-address {{ lab_net_prefix }}.7;
     }
-
-    host log.lab.example.com {
+    host git.lab.example.com {
         hardware ethernet {{ lab_mac_prefix }}:00:08;
         fixed-address {{ lab_net_prefix }}.8;
     }
-
-    host metric.lab.example.com {
-        hardware ethernet {{ lab_mac_prefix }}:00:09;
-        fixed-address {{ lab_net_prefix }}.9;
-    }
-
-    host id.lab.example.com {
-        hardware ethernet {{ lab_mac_prefix }}:00:10;
-        fixed-address {{ lab_net_prefix }}.10;
-    }
-
-    host smtp.lab.example.com {
-        hardware ethernet {{ lab_mac_prefix }}:00:11;
-        fixed-address {{ lab_net_prefix }}.11;
-    }
-
-    host repo-rhel8.lab.example.com {
-        hardware ethernet {{ lab_mac_prefix }}:00:12;
-        fixed-address {{ lab_net_prefix }}.12;
-    }
-
-    host repo-rhel9.lab.example.com {
-        hardware ethernet {{ lab_mac_prefix }}:00:13;
-        fixed-address {{ lab_net_prefix }}.13;
-    }
-
 }
-
