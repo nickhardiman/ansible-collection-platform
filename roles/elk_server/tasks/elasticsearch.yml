@@ -1,0 +1,108 @@
+---
+# https://www.elastic.co/guide/en/elasticsearch/reference/8.5/rpm.html
+
+- name: "elasticsearch: install supporting packages"
+  yum:
+    name: python3-libsemanage
+
+- name: "elasticsearch: Import the Elasticsearch GPG Key"
+  ansible.builtin.rpm_key:
+    state: present
+    key: https://artifacts.elastic.co/GPG-KEY-elasticsearch
+
+- name: "elasticsearch: copy yum repo file"
+  ansible.builtin.copy:
+    src: elasticsearch.repo
+    dest: /etc/yum.repos.d/elasticsearch.repo
+    owner: root
+    group: root
+    mode: 0644
+
+- name: "elasticsearch: install packages"
+  ansible.builtin.dnf:
+    name: 
+    - elasticsearch
+    - java-1.8.0-openjdk-headless
+    enablerepo: elasticsearch
+  register: r_dnf_elasticsearch
+
+- debug:
+    var: r_dnf_elasticsearch
+
+
+# config
+# https://www.elastic.co/guide/en/elasticsearch/reference/8.5/settings.html
+# Elasticsearch has three configuration files:
+# elasticsearch.yml for configuring Elasticsearch
+# jvm.options       for configuring Elasticsearch JVM settings
+# log4j2.properties for configuring Elasticsearch logging
+
+- name: "elasticsearch: copy config"
+  ansible.builtin.copy:
+    src: elasticsearch.yml
+    dest: /etc/elasticsearch/elasticsearch.yml
+    owner: root
+    group: elasticsearch
+    mode: 0660
+  notify: restart service
+
+- name: "elasticsearch: copy more config"
+  ansible.builtin.copy:
+    src: "{{ item }}"
+    dest: /etc/elasticsearch/jvm.options.d/
+    #owner: root
+    #group: elasticsearch
+    #mode: 0660
+  notify: restart service
+  loop:
+  - proxy.options
+  - memory.options
+
+
+# systemd
+- name: "elasticsearch: start the daemon"
+  ansible.builtin.systemd:
+    name: "{{ app_systemd_unit }}"
+    state: started
+    enabled: yes
+
+
+# firewall
+# https://access.redhat.com/documentation/en-us/red_hat_ansible_automation_platform/2.2/html-single/red_hat_ansible_automation_platform_installation_guide/index#ref-access-control-requirements_planning
+- name: "elasticsearch: permit service traffic"
+  ansible.posix.firewalld:
+    service: "{{ item }}"
+    immediate: yes
+    permanent: yes
+    state: enabled
+  loop: "{{ app_fw_services }}"
+
+- name: "elasticsearch: permit port traffic"
+  ansible.posix.firewalld:
+    port: "{{ item }}"
+    immediate: yes
+    permanent: yes
+    state: enabled
+  loop: "{{ app_fw_ports }}"
+  when: app_fw_ports is defined
+
+
+# more
+# certificate 
+# how do I replace this? 
+#  /etc/elasticsearch/certs/http_ca.crt
+# how about turning security off? 
+#  /etc/elasticsearch/elasticsearch.yml
+#  xpack.security.enabled: false
+
+# test 
+# curl --cacert /etc/elasticsearch/certs/http_ca.crt -u elastic:t3WgcJu_0lPJx8XdIWMk https://localhost:9200
+#
+# -u user:password
+# curl requires password for user 'elastic'
+# It's not stored in /etc/shadow or anywhere else I can find
+# password reset 
+# /usr/share/elasticsearch/bin/elasticsearch-reset-password -u elastic
+# you are given a random string. 
+
+

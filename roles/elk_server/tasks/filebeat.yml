@@ -1,0 +1,76 @@
+---
+# https://www.elastic.co/guide/en/filebeat/8.5/installing-logstash.html
+
+- name: "filebeat: install supporting packages"
+  yum:
+    name: python3-libsemanage
+
+- name: "filebeat: import the Elastic GPG Key"
+  ansible.builtin.rpm_key:
+    state: present
+    key: https://artifacts.elastic.co/GPG-KEY-elasticsearch
+
+- name: "filebeat: copy yum repo file"
+  ansible.builtin.copy:
+    src: elasticsearch.repo
+    dest: /etc/yum.repos.d/elasticsearch.repo
+    owner: root
+    group: root
+    mode: 0644
+
+- name: "filebeat: install packages"
+  ansible.builtin.dnf:
+    name: 
+    - filebeat
+    enablerepo: elasticsearch
+  register: r_dnf_filebeat
+
+- debug:
+    var: r_dnf_filebeat
+
+
+
+# config
+- name: "filebeat: copy server config"
+  ansible.builtin.copy:
+    src: filebeat.yml
+    dest: /etc/filebeat/
+    owner: root
+    group: root
+    mode: 0644
+  notify: restart filebeat
+
+- name: "filebeat: copy pipeline config"
+  ansible.builtin.copy:
+    src: logstash-beats.conf
+    dest: /etc/logstash/conf.d/
+    owner: root
+    group: root
+    mode: 0644
+  notify: restart logstash
+
+
+# systemd
+- name: "filebeat: start the daemon"
+  vars:
+    app_systemd_unit: filebeat
+  ansible.builtin.systemd:
+    name: "{{ app_systemd_unit }}"
+    state: started
+    enabled: yes
+
+# firewall
+# !!!
+#
+
+# !!! more
+# system module
+#  https://www.digitalocean.com/community/tutorials/how-to-install-elasticsearch-logstash-and-kibana-elastic-stack-on-centos-7
+#  filebeat modules enable system
+#  vim /etc/filebeat/modules.d/system.yml
+# https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-template.html
+#  filebeat setup --index-management -E output.logstash.enabled=false -E 'output.elasticsearch.hosts=["localhost:9200"]'
+#
+
+# tests 
+#

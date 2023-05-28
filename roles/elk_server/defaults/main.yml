@@ -1,0 +1,5 @@
+---
+# defaults file for elk_server
+app_fw_services: 
+- elasticsearch
+app_systemd_unit: elasticsearch

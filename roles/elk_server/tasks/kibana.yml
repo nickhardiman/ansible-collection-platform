@@ -1,0 +1,78 @@
+---
+# https://www.elastic.co/guide/en/kibana/8.5/rpm.html
+
+- name: "kibana: install supporting packages"
+  yum:
+    name: python3-libsemanage
+
+- name: "kibana: Import the Elastic GPG Key"
+  ansible.builtin.rpm_key:
+    state: present
+    key: https://artifacts.elastic.co/GPG-KEY-elasticsearch
+
+- name: "kibana: Copy yum repo file"
+  ansible.builtin.copy:
+    src: elasticsearch.repo
+    dest: /etc/yum.repos.d/elasticsearch.repo
+    owner: root
+    group: root
+    mode: 0644
+
+- name: "kibana: install packages"
+  ansible.builtin.dnf:
+    name: 
+    - kibana
+    enablerepo: elasticsearch
+  register: r_dnf_kibana
+
+- debug:
+    var: r_dnf_kibana
+
+
+# config
+- name: "kibana: copy server config"
+  vars:
+    app_systemd_unit: kibana
+  ansible.builtin.copy:
+    src: kibana.yml
+    dest: /etc/kibana/
+    owner: root
+    group: kibana
+    mode: 0660
+  notify: restart service
+
+
+# systemd
+- name: "kibana: start the daemon"
+  vars:
+    app_systemd_unit: kibana
+  ansible.builtin.systemd:
+    name: "{{ app_systemd_unit }}"
+    state: started
+    enabled: yes
+
+# firewall
+- name: "kibana: permit service traffic"
+  vars:
+    app_fw_services:
+    - kibana
+  ansible.posix.firewalld:
+    service: "{{ item }}"
+    immediate: yes
+    permanent: yes
+    state: enabled
+  loop: "{{ app_fw_services }}"
+
+
+# more? 
+# web UI http://192.168.134.8:5601/ 
+# setup asks for these
+# elasticsearch enrollment token
+#   [root@log ~]# /usr/share/elasticsearch/bin/elasticsearch-create-enrollment-token  --scope kibana
+#   eyJ2ZXIiOiI4LjUuMyIsImFkciI6WyIxOTIuMTY4LjEzNC44OjkyMDAiXSwiZmdyIjoiODA5MTg0NDkxMjEwZjcxYTA2NTkyYTJiZjU3OGVjYzhhYWU0MWEzYzQ1YWU5ZjIzZmIyZjYxMDcxOWVhNGZhYyIsImtleSI6ImxaZHFDNFVCa050LWlTaHk0QlM0OlI5NXBWNmVpUWY2dHNHR2Z1SC12RWcifQ==
+#   [root@log ~]#
+# kibana verification code 
+#   [root@log ~]# /usr/share/kibana/bin/kibana-verification-code
+#   Your verification code is:  789 897
+#   [root@log ~]#
+
