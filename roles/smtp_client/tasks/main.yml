@@ -16,11 +16,13 @@
     immediate: yes
     state: enabled
 
-- include_role: rhel-system-roles.postfix
+- name: set up null client 
+  ansible.builtin.include_role: 
+    name: rhel-system-roles.postfix
+  vars: 
     postfix_conf:
-      mydomain: "lab.example.com"
-      myorigin: "$mydomain"
       myhostname: "{{ inventory_hostname }}"
-      mydestination: "$myhostname, localhost.$mydomain"
-      mynetworks: "192.168.0.0/24"
-      inet_interfaces: "all"
+      myorigin: "$mydomain"
+      relayhost: "message.lab.example.com"
+      inet_interfaces: "loopback-only"
+      mydestination: ""

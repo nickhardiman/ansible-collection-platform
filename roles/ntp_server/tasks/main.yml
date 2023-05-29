@@ -1,0 +1,16 @@
+---
+# tasks file for ntp_server
+
+# https://docs.ansible.com/ansible/latest/collections/ansible/posix/firewalld_module.html
+- name: open firewall for NTP
+  ansible.posix.firewalld:
+    service: ntp
+    permanent: yes
+    immediate: yes
+    state: enabled
+
+# !!! not finished 
+# uncomment this line. 
+#   /etc/chrony.conf 
+#   #allow 192.168.0.0/16
+# restart. 
