@@ -1,17 +1,17 @@
 ---
 
+
+# check 
 # check for a cached storage file. 
 #   "/var/lib/libvirt/images/{{ fqdn }}-base.qcow2"
 # don't bother reinstalling if it exists. 
-
-# check 
 # If the volume already exists, 
 # assume this work has already been done.
-- name: Look for the machine volume.  
+- name: "Look for the machine volume '/var/lib/libvirt/images/{{ fqdn }}-base.qcow2'"  
   ansible.builtin.stat: 
     path: "/var/lib/libvirt/images/{{ fqdn }}-base.qcow2"
   register: r_volume
-- name: "does the volume '/var/lib/libvirt/images/{{ fqdn }}-base.qcow2' already exist?"
+- name: "does the volume {{ fqdn }}-base.qcow2 already exist?"
   ansible.builtin.set_fact:
     volume_file_exists: "{{ r_volume.stat.exists | bool }}"
 - ansible.builtin.debug:
@@ -23,4 +23,5 @@
   # how about some virt-clone and virt-sysprep ?
   # https://hardiman.consulting/rhel/9/virtual-machine/guest4-clone.html
   #- ansible.builtin.include_tasks: image-cleanup.yml
+  - ansible.builtin.include_tasks: vm-delete.yml
   when: not volume_file_exists

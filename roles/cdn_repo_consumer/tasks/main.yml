@@ -7,6 +7,21 @@
     var: rhsm_user
 
 
+# check 
+# If the instance volume already exists, 
+# assume this work has already been done.
+- name: "{{ fqdn }} already registered? "
+  ansible.builtin.command: 
+    cmd: /sbin/subscription-manager status
+  register: r_sm_status
+  ignore_errors: yes
+- name: "registered?"
+  ansible.builtin.set_fact:
+    f_registered: "{{ not r_sm_status.failed }}"
+- ansible.builtin.debug:
+    var: f_registered
+
+
 # error
 #   TimeoutError: [Errno 110] Connection timed out
 # probably means proxy settings are missing. 
@@ -20,7 +35,9 @@
     auto_attach: true
     server_proxy_hostname: gateway.lab.example.com
     server_proxy_port: 3128
-  when: inventory_hostname != "gateway.lab.example.com"
+  when: 
+  - inventory_hostname != "gateway.lab.example.com"
+  - f_registered == false
 
 - name: "register as user {{ rhsm_user }} and auto-subscribe to content (gateway only)"
   community.general.redhat_subscription:
@@ -28,7 +45,9 @@
     username: "{{ rhsm_user }}"
     password: "{{ rhsm_password }}"
     auto_attach: true
-  when: inventory_hostname == "gateway.lab.example.com"
+  when: 
+  - inventory_hostname == "gateway.lab.example.com"
+  - f_registered == false
 
  
 

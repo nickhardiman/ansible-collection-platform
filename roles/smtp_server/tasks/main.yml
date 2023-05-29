@@ -1,0 +1,29 @@
+---
+# tasks file for smtp_server
+# https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/9/html-single/automating_system_administration_by_using_rhel_system_roles/index#assembly_postfix-role-variables-in-system-roles_automating-system-administration-by-using-rhel-system-roles
+# https://www.redhat.com/en/blog/automating-postfix-installation-and-configuration-rhel-system-roles
+#
+# other approaches
+# https://access.redhat.com/solutions/6761851
+# Postfix Dovecot OpenLdap Mail server implementation
+# https://github.com/bertvv/ansible-role-mailserver
+
+# https://docs.ansible.com/ansible/latest/collections/ansible/posix/firewalld_module.html
+- name: open firewall for SMTP
+  ansible.posix.firewalld:
+    service: smtp
+    permanent: yes
+    immediate: yes
+    state: enabled
+
+- name: set up server 
+  ansible.builtin.include_role: 
+    name: rhel-system-roles.postfix
+  vars: 
+    postfix_conf:
+      mydomain: "lab.example.com"
+      myorigin: "$mydomain"
+      myhostname: "{{ inventory_hostname }}"
+      mydestination: "$myhostname, localhost.$mydomain"
+      mynetworks: "192.168.0.0/24"
+      inet_interfaces: "all"

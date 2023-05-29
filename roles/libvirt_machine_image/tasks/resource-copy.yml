@@ -17,4 +17,5 @@
   ansible.builtin.shell:
     cmd: "virsh dumpxml {{ fqdn }} > ~/libvirt/{{ fqdn }}.xml"
     chdir: ~/libvirt
-    creates: "~/libvirt/{{ fqdn }}.xml"
+    # always overwrite this file
+    #creates: "~/libvirt/{{ fqdn }}.xml"

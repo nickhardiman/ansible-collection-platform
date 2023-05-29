@@ -1,0 +1,39 @@
+# https://github.com/ansible-collections/community.libvirt/issues/40
+- name: remove NVRAM file
+  file:
+    name: "/var/lib/libvirt/qemu/nvram/{{ fqdn }}_VARS.fd"
+    state: absent
+
+- name: pull the plug
+  community.libvirt.virt:
+    name: "{{ fqdn }}"
+    state: destroyed
+
+- name: delete machine's domain
+  community.libvirt.virt:
+    name: "{{ fqdn }}"
+    command: undefine
+
+#https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/7/html/virtualization_deployment_and_administration_guide/sect-storage_volume_commands-deleting_storage_volumes
+- name: delete machine's volume
+  ansible.builtin.command: 
+    cmd: "virsh vol-delete {{ fqdn }}.qcow2 images"
+
+- name: give libvirt a few seconds.
+  ansible.builtin.pause:
+    seconds: 10
+
+# check
+# 
+- name: list libvirt's volumes
+  ansible.builtin.command: 
+    cmd: "virsh vol-list images"
+  register: r_pool_list
+- debug:
+    var: r_pool_list['stdout']
+
+# !!! no volume module in virt
+#- name: List available pools
+#  community.libvirt.virt_pool:
+#    command: list_pools
+#  register: r_pool_list

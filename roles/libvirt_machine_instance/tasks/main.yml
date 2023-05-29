@@ -1,4 +1,20 @@
 ---
 
-- include_tasks: vm-define.yml
-- include_tasks: vm-start.yml
+# check 
+# !!! If an instance is already running, skip this work.  
+- name: list running VMs
+  community.libvirt.virt:
+    command: list_vms
+    state: running
+  register: r_running_vms
+
+- name: "is {{ fqdn }} running?"
+  set_fact:
+    f_is_running: "{{ r_running_vms['list_vms'] is ansible.builtin.contains(fqdn) }}"
+- debug:
+    var: f_is_running
+
+- block: 
+  - include_tasks: vm-define.yml
+  - include_tasks: vm-start.yml
+  when: not f_is_running
