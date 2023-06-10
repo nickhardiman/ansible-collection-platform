@@ -3,9 +3,7 @@
 
 # public network
 public_net_short_name: public
-public_libvirt_name:   "net{{ public_net_short_name }}0"
+public_libvirt_name: "net{{ public_net_short_name }}0"
 public_nmcli_name: "bridge-{{ public_net_short_name }}0"
-public_bridge_name:     "br{{ public_net_short_name }}0"
+public_bridge_name: "br{{ public_net_short_name }}0"
 public_mac_prefix: "52:54:00:00"
-
-
