@@ -8,7 +8,7 @@
 # don't overwrite it.
 
 # check for a cached storage base file.
-- name: Look for the machine volume.
+- name: Look for the machine base volume.
   ansible.builtin.stat:
     path: "/var/lib/libvirt/images/{{ fqdn }}-base.qcow2"
   register: r_volume_base
@@ -19,7 +19,7 @@
     var: volume_base_file_exists
 
 # check for an image file. 
-- name: Look for the machine volume.  
+- name: Look for the machine image volume.  
   ansible.builtin.stat: 
     path: "/var/lib/libvirt/images/{{ fqdn }}.qcow2"
   register: r_volume_image

@@ -22,7 +22,7 @@ keyboard --vckeymap=gb
 
 # network
 # fixed IP address
-network --device=enp1s0 --bootproto=static --ip={{ address[inventory_hostname]['ipv4'] }} --netmask=255.255.255.0 --gateway={{ lab_net_prefix }}.1 --activate
+network --device=enp1s0 --bootproto=static --ip={{ nics[0]['ip'] }} --netmask=255.255.255.0 --gateway={{ lab_net_prefix }}.1 --activate
 network  --hostname={{ fqdn }}
 
 # licences and repos

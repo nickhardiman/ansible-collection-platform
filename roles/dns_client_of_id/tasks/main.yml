@@ -1,0 +1,33 @@
+---
+# https://docs.ansible.com/ansible/latest/collections/community/general/nmcli_module.html
+
+# # !!! hardcoded
+# - name: "use id 192.168.135.5 as the DNS server"
+#   community.general.nmcli:
+#     conn_name: enp1s0
+#     type: ethernet
+#     dns4:
+#     - "192.168.135.5"
+#     state: present
+
+# - name: brings up the interface to load change
+#   command: 
+#     cmd: "nmcli con up enp1s0"
+#   register: r_up
+# - debug:
+#     var: r_up
+
+# https://access.redhat.com/solutions/3374751
+- name: "use id 192.168.135.5 as the DNS server"
+  vars:
+    network_connections:
+      - name: enp1s0
+        state: up
+        type: "ethernet"
+        ip:
+          dns:
+            - "192.168.135.5"
+          dns_search:
+            - "lab.example.com"
+  include_role:
+    name: rhel-system-roles.network
