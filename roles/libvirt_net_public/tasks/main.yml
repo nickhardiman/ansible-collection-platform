@@ -19,7 +19,7 @@
 
 - name: "define the public bridge {{ public_bridge_name }}"
   include_tasks: public-linux-bridge.yml
-  when: ethernet_port != "{{ public_bridge_name }}"
+  when: ethernet_port != public_bridge_name
 
 - name: "define the libvirt network {{ public_libvirt_name }}"
   include_tasks: public-libvirt-net.yml
