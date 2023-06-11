@@ -1,0 +1,30 @@
+---
+
+# check for a cached storage base file.
+#   "/var/lib/libvirt/images/{{ fqdn }}-base.qcow2"
+# don't bother reinstalling if it exists.
+# check for an image file.
+#   "/var/lib/libvirt/images/{{ fqdn }}.qcow2"
+# don't overwrite it.
+
+# check for a cached storage base file.
+- name: Look for the machine volume.
+  ansible.builtin.stat:
+    path: "/var/lib/libvirt/images/{{ fqdn }}-base.qcow2"
+  register: r_volume_base
+- name: "does the volume '/var/lib/libvirt/images/{{ fqdn }}-base.qcow2' already exist?"
+  ansible.builtin.set_fact:
+    volume_base_file_exists: "{{ r_volume_base.stat.exists | bool }}"
+- ansible.builtin.debug:
+    var: volume_base_file_exists
+
+# check for an image file. 
+- name: Look for the machine volume.  
+  ansible.builtin.stat: 
+    path: "/var/lib/libvirt/images/{{ fqdn }}.qcow2"
+  register: r_volume_image
+- name: "does the volume '/var/lib/libvirt/images/{{ fqdn }}.qcow2' already exist?"
+  ansible.builtin.set_fact:
+    volume_image_file_exists: "{{ r_volume_image.stat.exists | bool }}"
+- ansible.builtin.debug:
+    var: volume_image_file_exists

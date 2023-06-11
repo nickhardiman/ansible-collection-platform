@@ -37,6 +37,7 @@
     server_proxy_port: 3128
   when: 
   - inventory_hostname != "gateway.lab.example.com"
+  - inventory_hostname != "gateway.site1.lab.example.com"
   - f_registered == false
 
 - name: "register as user {{ rhsm_user }} and auto-subscribe to content (gateway only)"
@@ -46,7 +47,7 @@
     password: "{{ rhsm_password }}"
     auto_attach: true
   when: 
-  - inventory_hostname == "gateway.lab.example.com"
+  - inventory_hostname == "gateway.lab.example.com" or inventory_hostname == "gateway.site1.lab.example.com"
   - f_registered == false
 
  

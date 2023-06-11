@@ -1,6 +1,5 @@
 ---
-# defaults file for libvirt-guest
-#   https://github.com/nickhardiman/libvirt-guest/blob/main/defaults/main.yml
+# defaults file 
 
 # compute
 cpus: 2

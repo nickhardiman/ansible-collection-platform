@@ -1,22 +1,3 @@
 ---
 
-# check for a cached storage file. 
-#   "/var/lib/libvirt/images/{{ fqdn }}-base.qcow2"
-# don't bother reinstalling if it exists. 
-
-# check 
-# If the instance volume already exists, 
-# assume this work has already been done.
-- name: Look for the machine volume.  
-  ansible.builtin.stat: 
-    path: "/var/lib/libvirt/images/{{ fqdn }}.qcow2"
-  register: r_volume
-- name: "does the volume '/var/lib/libvirt/images/{{ fqdn }}.qcow2' already exist?"
-  ansible.builtin.set_fact:
-    volume_file_exists: "{{ r_volume.stat.exists | bool }}"
-- ansible.builtin.debug:
-    var: volume_file_exists
-
-- block:
-  - ansible.builtin.include_tasks: vm-build-kickstart.yml
-  when: not volume_file_exists
+- ansible.builtin.include_tasks: vm-build-kickstart.yml
