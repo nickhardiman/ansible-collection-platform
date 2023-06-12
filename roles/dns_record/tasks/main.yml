@@ -1,0 +1,26 @@
+---
+# add DNS records for a new host to Red Hat IDM
+# https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/9/html/installing_identity_management/index
+# upstream project is FreeIPA https://www.freeipa.org/page/About
+
+- name: Ensure dns A record is present
+  community.general.ipa_dnsrecord:
+    ipa_host: "{{ ipa_host }}"
+    ipa_pass: "{{ ipa_pass }}"
+    state: present
+    zone_name: "{{ zone_forward_name }}"
+    record_name: "{{ record_a_name }}"
+    record_type: 'A'
+    record_value: "{{ record_a_value }}"
+    validate_certs: false
+
+- name: Ensure dns PTR record is present
+  community.general.ipa_dnsrecord:
+    ipa_host: "{{ ipa_host }}"
+    ipa_pass: "{{ ipa_pass }}"
+    state: present
+    zone_name: "{{ zone_reverse_name }}"
+    record_name: "{{ record_ptr_name }}"
+    record_type: 'PTR'
+    record_value: "{{ record_ptr_value }}"
+    validate_certs: false

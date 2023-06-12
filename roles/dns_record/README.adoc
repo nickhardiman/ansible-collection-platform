@@ -1,0 +1,102 @@
+= libvirt_volume
+
+Create a libvirt volume.
+
+If the new VM is  named "kvm-guest.lab.example.com", then the role creates these resources. 
+Playbook _tests/no-kvm-guest.yml_ deletes them. 
+
+* /root/libvirt/kvm-guest.lab.example.com.xml - config file for the VM
+* /var/lib/libvirt/images/kvm-guest.lab.example.com.qcow2 - the VM's disk image
+
+The role creates a KVM guest, installs RHEL 9.0 (minimal), 
+configures a few things then powers off.
+This role is simple, with plenty of hardcoded values in both the tasks and kickstart file _templates/kvm-guest.ks.j2_. 
+I made this role to learn more about the libvirt collection so don't expect polish.
+
+== Requirements
+
+libvirt 
+
+The libvirt environment installed and running (see https://github.com/nickhardiman/libvirt-host).
+
+Installer ISO file
+
+* /var/lib/libvirt/images/rhel-baseos-9.0-x86_64-dvd.iso
+
+Add other versions you might want to install, like _rhel-8.6-x86_64-dvd.iso_. 
+Download ISO files from https://access.redhat.com/downloads/. 
+Sign up for free at https://developers.redhat.com/ to get access.
+
+Free disk space 
+
+Enough to hold ISOs and the new storage volume (30GiB by default). 
+
+
+== Role Variables
+
+
+== Dependencies
+
+community.libvirt (https://github.com/ansible-collections/community.libvirt)
+
+== Example
+
+=== Create resources for VM 
+
+!!!
+
+Use virsh to check.
+```
+sudo virsh list -all
+sudo virsh console kvm-guest
+```
+
+If you want to login to the console, two accounts are configured. 
+
+* user: root, password: Password;1
+* user: nick, password: Password;1
+
+=== Remove the VM _kvm-guest_.
+
+```
+sudo ansible-playbook libvirt-guest/tests/no-kvm-guest.yml
+```
+
+
+=== Variations 
+
+Create the VM, register and subscribe.
+```
+sudo ansible-playbook libvirt-guest/tests/test.yml \
+    --extra-var="rhsm_user=my_user"  \
+    --extra-var='rhsm_password=my_password'  \
+    --extra-var="rhsm_pool_id=my_pool_id"
+```
+
+Create another VM called _another-vm_ with a bigger disk (40GiB, not 30) and a different MAC address.
+```
+sudo ansible-playbook libvirt-guest/tests/test.yml  \
+    --extra-var="host=another-vm"  \
+	--extra-var="disk_size=40"   \
+	--extra-var="if1_mac=52:54:00:12:34:56"
+```
+Delete _another-vm_.
+```
+sudo ansible-playbook libvirt-guest/tests/no-kvm-guest.yml \
+    --extra-var="host=another-vm" 
+```
+Install RHEL 8, not 9.
+```
+sudo ansible-playbook libvirt-guest/tests/test.yml  \
+    --extra-var="os_variant=rhel8.5"  \
+    --extra-var="install_iso=/var/lib/libvirt/images/rhel-8.6-x86_64-dvd.iso"
+```
+
+== License
+
+BSD
+
+== Author Information
+
+Nick Hardiman
+
