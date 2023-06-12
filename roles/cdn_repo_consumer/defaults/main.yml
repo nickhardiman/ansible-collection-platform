@@ -1,2 +1,4 @@
 ---
-# defaults file for cdn_repo_consumer
+# defaults file 
+# server_proxy_hostname: gateway.lab.example.com
+# server_proxy_port: 3128

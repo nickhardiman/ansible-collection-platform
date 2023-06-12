@@ -22,7 +22,7 @@ keyboard --vckeymap=gb
 
 # network
 network --device=enp1s0 --bootproto=dhcp --ipv6=auto --activate
-network --device=enp2s0 --bootproto=static --ip={{ lab_net_prefix }}.3 --netmask=255.255.255.0 --gateway={{ lab_net_prefix }}.1 --activate
+network --device=enp2s0 --bootproto=static --ip={{ lab_net_prefix }}.3 --netmask=255.255.255.0 --gateway={{ lab_net_prefix }}.1 --nodefroute --activate
 network  --hostname={{ fqdn }}
 
 # licences and repos

@@ -37,7 +37,33 @@
 
 - debug: 
     var: r_install
- 
+
+
+# !!! add recursion
+# trusted_network seems to include 192.168.135.0/24 only.
+# before
+# Check from a server outside id's subnet using command
+#   dig executionnode-1.site1.lab.example.com 
+# and look for 
+#   ;; WARNING: recursion requested but not available
+# after 
+# message gone, external addresses resolve 
+# eg. dig www.google.com is not REFUSED
+
+- name: add named config
+  ansible.builtin.copy:
+    src: ipa-ext.conf
+    dest: /etc/named/ipa-ext.conf
+  notify: 
+  - Restart named
+
+- name: add named options config
+  ansible.builtin.copy:
+    src: ipa-options-ext.conf
+    dest: /etc/named/ipa-options-ext.conf
+  notify: 
+  - Restart named
+
 
 # firewall
 #
