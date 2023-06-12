@@ -1,8 +1,8 @@
 ---
 # tasks file for hosts_record
 
-- name: "add to /etc/hosts: {{ ip_address }}   {{ fqdn }}   {{ host }}"
+- name: "add to /etc/hosts: {{ h_ip_address }}   {{ h_fqdn }}   {{ h_host }}"
   ansible.builtin.lineinfile:
     path: /etc/hosts
-    search_string: "{{ fqdn }}"
-    line: "{{ ip_address }}   {{ fqdn }}   {{ host }}"
+    search_string: "{{ h_fqdn }}"
+    line: "{{ h_ip_address }}   {{ h_fqdn }}   {{ h_host }}"

@@ -1,2 +1,5 @@
 ---
-# defaults file for hosts_record
+# defaults file 
+h_ip_address: 1.2.3.4
+h_fqdn: host.sub.domain
+h_host: host

@@ -9,11 +9,23 @@
 # These tasks use libvirt only.
 # They don't check anything at the OS level, such as waiting for a connection. 
 
+# wait for shutdown to complete. 
+# time out after 20 retries * 30 seconds = 10 minutes
+- name: wait up to 10 minutes for vm shut down
+  community.libvirt.virt:
+    command: status
+    name: "{{ fqdn }}"
+  register: r_virt_status
+  until: r_virt_status['status'] == 'shutdown'
+  retries: 20
+  delay: 30 
+
 - name: get domain info
   community.libvirt.virt:
     name: "{{ fqdn }}"
     command: info
   register: r_domain_info
+
 
 - name: display domain info
   debug:
