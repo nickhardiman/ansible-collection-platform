@@ -1,0 +1,18 @@
+---
+# defaults file for iso_rhel_download
+
+redhat_token_url: https://sso.redhat.com/auth/realms/redhat-external/protocol/openid-connect/token
+download_directory: /var/lib/libvirt/images/
+
+# File downloads are identified by SHA256 checksum, not file name (rhel-9.2-x86_64-dvd.iso).
+# Use the Subscription Management API to find the right checksum for 
+# image "Red Hat Enterprise Linux 9.2 Binary DVD"
+# ??? Why not figure this out automatically? 
+# Subscription Management API endpoint has a Swagger API documentation page here: 
+# https://access.redhat.com/management/api/rhsm
+# Try executing: Get /images/rhel/{Version}/{Arch} 
+# where Version is 9.2 and Arch is x86_64.
+subscription_management_api_base: https://api.access.redhat.com/management/v1/images
+checksum_rhel_9_dvd: a18bf014e2cb5b6b9cee3ea09ccfd7bc2a84e68e09487bb119a98aa0e3563ac2
+download_href_rhel_9: '{{ subscription_management_api_base }}/{{ checksum_rhel_9_dvd }}/download'
+download_timeout: 3600

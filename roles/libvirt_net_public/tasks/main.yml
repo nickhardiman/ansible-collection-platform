@@ -1,27 +1,52 @@
 ---
 # Create a bridge, attach the default interface, and add libvirt config.
 # Assume a simple machine with only one ethernet port.
+
+# rhel-system-roles.network
+# /usr/share/doc/rhel-system-roles/network/example-bridge_with_vlan-playbook.yml
+# creates a few things.
+#   brpublic0              linux bridge
+#   bridge-public0          bridge
+#   bridge-public0-enp2s0f0 ethernet
 #
-# The network role is not the idempotent role model it shoud be. 
+# The network role is not the idempotent role model it shoud be.
 # It can disconnect ports from an existing bridge.
 # Work around this with a bridge check.
-# If the default IPv4 interface name is brpublic0 rather than something like enp2s0f0, 
+# If the default IPv4 interface name is brpublic0 rather than something like enp2s0f0,
 # assume this work has already been done and
 # the bridge to the outside world already exists.
 #
 # The libvirt modules are better behaved.
- 
-- name: find the default network interface name
-  set_fact:
+
+# CLI equivalents of rhel-system-roles.network
+# These CLI commands do something similar.
+#   # create a bridge device
+#   nmcli con add ifname brpublic0 type bridge
+#   nmcli con up brpublic0
+#   # connect ethernet port to bridge
+#   nmcli con down enp2s0f0
+#   nmcli con add type bridge-slave ifname enp2s0f0 master brpublic0
+#   nmcli con up brpublic0
+# check
+#   ip -brief link show type bridge
+#   ip route
+#   nmcli con
+#   nmcli device status
+#   sysctl net.ipv4.ip_forward
+# delete
+#   sudo nmcli con delete brpublic0-enp2s0f0
+#   sudo nmcli con delete brpublic0
+
+- name: Find the default network interface name
+  ansible.builtin.set_fact:
     ethernet_port: "{{ ansible_facts['default_ipv4']['interface'] }}"
-- debug: 
+- name: Display the default network interface name
+  ansible.builtin.debug:
     var: ethernet_port
 
-- name: "define the public bridge {{ public_bridge_name }}"
-  include_tasks: public-linux-bridge.yml
+- name: "Define the public bridge {{ public_bridge_name }}"
+  ansible.builtin.include_tasks: public-linux-bridge.yml
   when: ethernet_port != public_bridge_name
 
-- name: "define the libvirt network {{ public_libvirt_name }}"
-  include_tasks: public-libvirt-net.yml
-
-
+- name: "Define the libvirt network {{ public_libvirt_name }}"
+  ansible.builtin.include_tasks: public-libvirt-net.yml

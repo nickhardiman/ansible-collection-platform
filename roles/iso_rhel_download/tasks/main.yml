@@ -1,0 +1,98 @@
+---
+# tasks file for iso_rhel_download
+
+# A simpler version of the far superior role by Steffen Scheib.
+# Use this instead:
+# https://github.com/sscheib/ansible-role-rhel_iso_kickstart/tree/main
+# This smaller version is more fitting for my smaller brain.
+#  🧠 <-- actual size
+
+
+# authenticate
+
+# https://access.redhat.com/articles/3626371
+# Using APIs for Red Hat services
+
+# Generating a new offline token
+#
+# Open the API token page. 
+# https://access.redhat.com/management/api
+# Generate a token.
+# Store the token in an environment variable.
+# export OFFLINE_TOKEN=eyJh...(about 600 more characters)...xmtyM
+# problem?
+# I got a reply containing a 400 code and this error:
+# {"error": "invalid_grant", "error_description": "Invalid refresh token. Token client and authorized client don't match"}
+# when I used an automation hub token from
+# https://console.redhat.com/ansible/automation-hub/token
+
+- name: Copy offline token from environment variable
+  ansible.builtin.set_fact:
+    offline_token: "{{ lookup('ansible.builtin.env', 'OFFLINE_TOKEN') }}"
+
+# Generating an access token
+- name: 'Authenticate on the Red Hat Portal'
+  ansible.builtin.uri:
+    url: '{{ redhat_token_url }}'
+    return_content: true
+    method: 'POST'
+    body_format: 'form-urlencoded'
+    body:
+      grant_type: 'refresh_token'
+      client_id: 'rhsm-api'
+      refresh_token: '{{ offline_token }}'
+  register: r_request_refresh_token
+  no_log: "{{ ansible_verbosity < 1 }}"
+
+- name: Display reply if verbose
+  ansible.builtin.debug:
+    verbosity: 1
+    var: r_request_refresh_token
+
+- name: Copy access token from the reply
+  ansible.builtin.set_fact:
+    access_token: '{{ r_request_refresh_token.json.access_token }}'
+
+
+# get ISO details
+
+- name: 'Ensure download directory exists: {{ download_directory }}'
+  ansible.builtin.file:
+    path: '{{ download_directory }}'
+    state: 'directory'
+
+- name: 'Gather information about the ISO to download'
+  ansible.builtin.uri:
+    url: '{{ download_href_rhel_9 }}'
+    method: 'GET'
+    follow_redirects: 'none'
+    status_code: 307
+    headers:
+      Accept: '*/*'
+      Authorization: 'Bearer {{ access_token }}'
+  register: r_iso_information
+
+- name: Display reply if verbose
+  ansible.builtin.debug:
+    verbosity: 1
+    var: r_iso_information
+
+- name: 'Set fact: Extract filename of the ISO to download'
+  ansible.builtin.set_fact:
+    iso_filename: '{{ r_iso_information.json.body.filename }}'
+
+# download 
+
+# owner (root), permissions (644) and SELinux file type (virt_image_t) shouldn't need work.
+- name: 'Download {{ iso_filename }}, timeout in {{ download_timeout }} seconds'
+  ansible.builtin.get_url:
+    url: '{{ download_href_rhel_9 }}'
+    dest: '{{ download_directory }}/{{ iso_filename }}'
+    headers:
+      Accept: '*/*'
+      Authorization: 'Bearer {{ access_token }}'
+    # owner: '{{ _iso_owner }}'
+    # group: '{{ _iso_group }}'
+    # mode: '{{ _iso_mode }}'
+    checksum: 'sha256:{{ checksum_rhel_9_dvd }}'
+    timeout: '{{ download_timeout }}'
