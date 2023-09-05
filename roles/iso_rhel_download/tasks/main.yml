@@ -83,6 +83,9 @@
 
 # download 
 
+# Task downloads to a temporary file, something like 
+#   /home/ansible_user/.ansible/tmp/ansible-tmp-1693932672.055527-43704-15290345689509/tmpu7fo8za
+# then copies to the final location. 
 # owner (root), permissions (644) and SELinux file type (virt_image_t) shouldn't need work.
 - name: 'Download {{ iso_filename }}, timeout in {{ download_timeout }} seconds'
   ansible.builtin.get_url:
