@@ -1,5 +1,7 @@
 ---
 # defaults file 
+admin_password: 'Password;1'
+
 lab_net_prefix: "192.168.134"
 lab_mac_prefix: "52:54:00:02"
 lab_domain: lab.example.com

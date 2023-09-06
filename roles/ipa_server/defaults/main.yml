@@ -9,4 +9,5 @@ app_fw_services:
 #app_fw_ports: 
 #- 53/udp
 
-
+ds_password: 'Password;1'
+admin_password: 'Password;1'

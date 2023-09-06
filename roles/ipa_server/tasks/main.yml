@@ -1,86 +1,87 @@
 ---
 #
-# !!! Red Hat supplies roles for this. 
+# !!! Red Hat supplies roles for this.
 # see
 # https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/9/html-single/installing_identity_management/index#installing-the-ansible-freeipa-package_server-ansible
 #
 # bombs out if already installed
-# !!! check? 
+# !!! check?
 # /usr/bin/ipa --version
-# 
+#
 # https://access.redhat.com/solutions/4237121
 # auto-reverse option with "ipa-server-install" fail to add reverse zone in IPA DNS.
-- name: define install command 
-  set_fact: 
+- name: Define install command 
+  ansible.builtin.set_fact: 
     ipa_install_cmd: >
-      ipa-server-install  
-      --ds-password='Password;1' 
-      --admin-password='Password;1' 
-      --domain=lab.example.com 
-      --realm=LAB.EXAMPLE.COM 
-      --hostname=id.lab.example.com 
-      --setup-dns 
-      --forwarder={{ lab_net_prefix }}.3 
-      --no-dnssec-validation 
+      ipa-server-install
+      --ds-password='{{ ds_password }}'
+      --admin-password='{{ admin_password }}'
+      --domain={{ lab_domain }}
+      --realm={{ lab_domain | upper }}
+      --hostname=id.{{ lab_domain }}
+      --setup-dns
+      --forwarder={{ lab_net_prefix }}.3
+      --no-dnssec-validation
       --auto-reverse  
       --allow-zone-overlap
-      --netbios-name=LAB 
+      --netbios-name={{ lab_net_short_name | upper }}
       --unattended
-- debug: 
+- name: display command
+  ansible.builtin.debug: 
     var: ipa_install_cmd
 
-- name: run installer
+- name: Run installer
   ansible.builtin.shell:
     cmd: "{{ ipa_install_cmd }}"
-  ignore_errors: yes
+  ignore_errors: true
   register: r_install
 
-- debug: 
-    var: r_install
+- name: display result
+  ansible.builtin.debug: 
+    var: r_install['stdout_lines']
 
 
 # !!! add recursion
 # trusted_network seems to include 192.168.135.0/24 only.
 # before
 # Check from a server outside id's subnet using command
-#   dig executionnode-1.site1.lab.example.com 
-# and look for 
+#   dig executionnode-1.site1.lab.example.com
+# and look for
 #   ;; WARNING: recursion requested but not available
-# after 
-# message gone, external addresses resolve 
+# after
+# message gone, external addresses resolve
 # eg. dig www.google.com is not REFUSED
 
-- name: add named config
+- name: Add named config
   ansible.builtin.copy:
     src: ipa-ext.conf
     dest: /etc/named/ipa-ext.conf
-  notify: 
-  - Restart named
+  notify:
+    - Restart named
 
-- name: add named options config
+- name: Add named options config
   ansible.builtin.copy:
     src: ipa-options-ext.conf
     dest: /etc/named/ipa-options-ext.conf
-  notify: 
-  - Restart named
+  notify:
+    - Restart named
 
 
 # firewall
 #
-- name: permit service traffic
+- name: Permit service traffic
   ansible.posix.firewalld:
     service: "{{ item }}"
-    immediate: yes
-    permanent: yes
+    immediate: true
+    permanent: true
     state: enabled
   loop: "{{ app_fw_services }}"
 
-- name: permit port traffic
+- name: Permit port traffic
   ansible.posix.firewalld:
     port: "{{ item }}"
-    immediate: yes
-    permanent: yes
+    immediate: true
+    permanent: true
     state: enabled
   loop: "{{ app_fw_ports }}"
   when: app_fw_ports is defined
-

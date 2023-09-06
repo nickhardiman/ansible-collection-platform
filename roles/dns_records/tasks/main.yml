@@ -5,10 +5,10 @@
 
 - name: Ensure dns A record is present
   community.general.ipa_dnsrecord:
-    ipa_host: id.lab.example.com
-    ipa_pass: Password;1
+    ipa_host: "id.{{ lab_domain }}"
+    ipa_pass: "{{ admin_password }}"
     state: present
-    zone_name: lab.example.com
+    zone_name: "{{ lab_forward_zone }}"
     record_name: "{{ item }}"
     record_type: 'A'
     record_value: "{{ address[item]['ipv4'] }}"
@@ -16,8 +16,8 @@
 
 - name: Ensure dns PTR record is present
   community.general.ipa_dnsrecord:
-    ipa_host: id.lab.example.com
-    ipa_pass: Password;1
+    ipa_host: "id.{{ lab_domain }}"
+    ipa_pass: "{{ admin_password }}"
     state: present
     zone_name: "{{ lab_reverse_zone }}"
     record_name: "{{ address[item]['ip_last_octet'] }}"
