@@ -4,12 +4,12 @@
 # https://docs.ansible.com/ansible/latest/collections/community/general/nmcli_module.html
 #
 # # !!! hardcoded
-- name: "use id (192.168.135.5) as the DNS server"
+- name: "use id ({{ lab_net_prefix }}.5) as the DNS server"
   community.general.nmcli:
     conn_name: enp1s0
     type: ethernet
     dns4:
-    - "192.168.135.5"
+    - "{{ lab_net_prefix }}.5"
     state: present
 
 - name: brings up the interface to load change

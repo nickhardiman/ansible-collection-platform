@@ -25,7 +25,7 @@
     postfix_conf:
       myhostname: "{{ inventory_hostname }}"
       myorigin: "$mydomain"
-      relayhost: "message.lab.example.com"
+      relayhost: "message.{{ lab_domain }}"
       inet_interfaces: "loopback-only"
       mydestination: ""
 

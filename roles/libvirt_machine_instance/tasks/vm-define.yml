@@ -17,9 +17,10 @@
     src: "{{ '~/libvirt/' + fqdn + '.xml' }}"
   register: r_xml
 
-- name: Print returned information
+- name: Display returned VM config
   ansible.builtin.debug:
     msg: "{{ r_xml['content'] | b64decode }}"
+    verbosity: 1
 
 - name: Define vm from xml and set autostart
   community.libvirt.virt:

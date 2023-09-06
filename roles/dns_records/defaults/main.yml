@@ -5,7 +5,8 @@ admin_password: 'Password;1'
 lab_net_prefix: "192.168.134"
 lab_mac_prefix: "52:54:00:02"
 lab_domain: lab.example.com
-lab_reverse_zone: "134.168.192.in-addr.arpa"
+lab_domain_forward: lab.example.com.
+lab_domain_reverse: "134.168.192.in-addr.arpa"
 # to list keys of this dict of dicts in a loop, use: 
 #       loop: "{{ address | list }}"
 address:

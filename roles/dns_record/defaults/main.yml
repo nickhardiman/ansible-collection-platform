@@ -1,17 +1,13 @@
 ---
 # defaults file 
+admin_password: 'Password;1'
 
 lab_net_prefix: "192.168.134"
 lab_mac_prefix: "52:54:00:02"
 lab_domain_forward: lab.example.com
 lab_domain_reverse: "134.168.192.in-addr.arpa"
 
-ipa_host: id.lab.example.com
-ipa_pass: Password;1
-
-zone_forward_name: "{{ lab_domain_forward }}"
 record_a_name: ipsal
 record_a_value: 192.168.134.5
-zone_reverse_name: "{{ lab_domain_reverse }}"
 record_ptr_name: 5
 record_ptr_value: ipsal.lab.example.com

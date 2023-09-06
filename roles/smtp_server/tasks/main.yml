@@ -21,7 +21,7 @@
     name: rhel-system-roles.postfix
   vars: 
     postfix_conf:
-      mydomain: "lab.example.com"
+      mydomain: "{{ lab_domain }}"
       myorigin: "$mydomain"
       myhostname: "{{ inventory_hostname }}"
       mydestination: "$myhostname, localhost.$mydomain"

@@ -3,23 +3,23 @@
 # https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/9/html/installing_identity_management/index
 # upstream project is FreeIPA https://www.freeipa.org/page/About
 
-- name: Ensure dns A record is present
+- name: "Add DNS A record to id.{{ lab_domain }}"
   community.general.ipa_dnsrecord:
     ipa_host: "id.{{ lab_domain }}"
     ipa_pass: "{{ admin_password }}"
     state: present
-    zone_name: "{{ lab_forward_zone }}"
+    zone_name: "{{ lab_domain_forward }}"
     record_name: "{{ item }}"
     record_type: 'A'
     record_value: "{{ address[item]['ipv4'] }}"
   loop: "{{ address | list }}"
 
-- name: Ensure dns PTR record is present
+- name: "Add DNS PTR record to id.{{ lab_domain }}"
   community.general.ipa_dnsrecord:
     ipa_host: "id.{{ lab_domain }}"
     ipa_pass: "{{ admin_password }}"
     state: present
-    zone_name: "{{ lab_reverse_zone }}"
+    zone_name: "{{ lab_domain_reverse }}"
     record_name: "{{ address[item]['ip_last_octet'] }}"
     record_type: 'PTR'
     record_value: "{{ item + '.' + lab_domain }}."
