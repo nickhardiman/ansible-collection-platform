@@ -13,6 +13,15 @@ download_directory: /var/lib/libvirt/images/
 # Try executing: Get /images/rhel/{Version}/{Arch} 
 # where Version is 9.2 and Arch is x86_64.
 subscription_management_api_base: https://api.access.redhat.com/management/v1/images
-checksum_rhel_9_dvd: a18bf014e2cb5b6b9cee3ea09ccfd7bc2a84e68e09487bb119a98aa0e3563ac2
-download_href_rhel_9: '{{ subscription_management_api_base }}/{{ checksum_rhel_9_dvd }}/download'
 download_timeout: 3600
+
+checksum_rhel_9_dvd: a18bf014e2cb5b6b9cee3ea09ccfd7bc2a84e68e09487bb119a98aa0e3563ac2
+download_href_rhel_9_dvd: '{{ subscription_management_api_base }}/{{ checksum_rhel_9_dvd }}/download'
+
+# "imageName": "Red Hat Enterprise Linux 8.8 Binary DVD"
+# "filename": "rhel-8.8-x86_64-dvd.iso"
+checksum_rhel_8_dvd: 517abcc67ee3b7212f57e180f5d30be3e8269e7a99e127a3399b7935c7e00a09
+download_href_rhel_8_dvd: '{{ subscription_management_api_base }}/{{ checksum_rhel_8_dvd }}/download'
+
+checksum_sha256: "{{ checksum_rhel_9_dvd }}"
+download_href: "{{ download_href_rhel_9_dvd }}"

@@ -63,7 +63,7 @@
 
 - name: 'Gather information about the ISO to download'
   ansible.builtin.uri:
-    url: '{{ download_href_rhel_9 }}'
+    url: '{{ download_href }}'
     method: 'GET'
     follow_redirects: 'none'
     status_code: 307
@@ -89,7 +89,7 @@
 # owner (root), permissions (644) and SELinux file type (virt_image_t) shouldn't need work.
 - name: 'Download {{ iso_filename }}, timeout in {{ download_timeout }} seconds'
   ansible.builtin.get_url:
-    url: '{{ download_href_rhel_9 }}'
+    url: '{{ download_href }}'
     dest: '{{ download_directory }}/{{ iso_filename }}'
     headers:
       Accept: '*/*'
@@ -97,5 +97,5 @@
     # owner: '{{ _iso_owner }}'
     # group: '{{ _iso_group }}'
     # mode: '{{ _iso_mode }}'
-    checksum: 'sha256:{{ checksum_rhel_9_dvd }}'
+    checksum: 'sha256:{{ checksum_sha256 }}'
     timeout: '{{ download_timeout }}'
