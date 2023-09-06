@@ -100,7 +100,8 @@ tree
 # last jobs
 %post --log=/root/ks-post.log
 
-# key-based login for ansible user
+# ansible user
+# key-based login
 mkdir -m0700 /home/{{ user_ansible_name }}/.ssh/
 cat <<EOF >/home/{{ user_ansible_name }}/.ssh/authorized_keys
 {{ user_ansible_public_key }}
@@ -110,6 +111,8 @@ chown -R {{ user_ansible_name }}:{{ user_ansible_name }} /home/{{ user_ansible_n
 chmod 0600 /home/{{ user_ansible_name }}/.ssh/authorized_keys
 # fix up selinux context
 restorecon -vR /home/{{ user_ansible_name }}/.ssh/
+# Allow passwordless sudo.
+echo "ansible_user      ALL=(ALL)       NOPASSWD: ALL" > /etc/sudoers.d/ansible_user
 
 # subscription
 # use your Red Hat developer account
