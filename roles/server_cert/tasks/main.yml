@@ -72,7 +72,8 @@
     provider: ownca
     ownca_path: /etc/pki/ca-trust/source/anchors/ca-certificate.pem
     ownca_privatekey_path: /etc/pki/tls/private/ca-certificate.key
-    ownca_privatekey_passphrase: "{{ ca_secret_passphrase }}"
+    # !!! removed encryption. See bootstrap.sh
+    #ownca_privatekey_passphrase: "{{ ca_secret_passphrase }}"
     ownca_not_after: +365d  # valid for one year
     ownca_not_before: "-1d"  # valid since yesterday
   delegate_to: "{{ groups['hypervisor'][0] }}"
@@ -82,5 +83,3 @@
   copy:
     dest: "/etc/pki/tls/certs/{{ server_cn }}.pem"
     content: "{{ r_cert['certificate'] }}"
-
-
