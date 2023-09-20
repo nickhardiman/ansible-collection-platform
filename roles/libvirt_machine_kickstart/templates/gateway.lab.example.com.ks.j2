@@ -22,7 +22,7 @@ keyboard --vckeymap=gb
 
 # network
 network --device=enp1s0 --bootproto=dhcp --ipv6=auto --activate
-network --device=enp2s0 --bootproto=static --ip={{ lab_net_prefix }}.3 --netmask=255.255.255.0 --gateway={{ lab_net_prefix }}.1 --nodefroute --activate
+network --device=enp2s0 --bootproto=static --ip={{ nics[1]['ip'] }} --netmask=255.255.255.0 --gateway={{ lab_net_prefix }}.1 --nodefroute --activate
 network  --hostname={{ fqdn }}
 
 # licences and repos
@@ -58,7 +58,6 @@ selinux --enforcing
 # open firewall
 {% set service_options = " --service=" ~ net_services|join(" --service=") %}
 firewall --enabled {{ service_options }}
-# firewall --enabled --http --ssh
 
 # after installing the OS
 # skip anaconda's prompt "Installation complete. Press ENTER to quit:"
@@ -118,9 +117,10 @@ restorecon -vR /home/{{ user_ansible_name }}/.ssh/
 echo "ansible_user      ALL=(ALL)       NOPASSWD: ALL" > /etc/sudoers.d/ansible_user
 
 # subscription
+# !!! moved to another role
 # use your Red Hat developer account
-/usr/sbin/subscription-manager register --username={{ rhsm_user }} --password='{{ rhsm_password }}'
-/usr/sbin/subscription-manager attach --pool={{ rhsm_pool_id }}
+#/usr/sbin/subscription-manager register --username={{ rhsm_user }} --password='{{ rhsm_password }}'
+#/usr/sbin/subscription-manager attach --pool={{ rhsm_pool_id }}
 
 %end
 
