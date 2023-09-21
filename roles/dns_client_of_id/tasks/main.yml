@@ -1,15 +1,17 @@
 ---
 # https://docs.ansible.com/ansible/latest/collections/community/general/nmcli_module.html
+# Ansible facts (hostvars['id.build.example.com']['ansible_facts') may not be set. 
+# 
+- name: Find id's IPv4 address of the first interface
+  set_fact:
+    dns_server_ip: "{{ hostvars['id.' + lab_domain]['nics'][0]['ip'] }}"
 
-# https://docs.ansible.com/ansible/latest/collections/community/general/nmcli_module.html
-#
-# # !!! hardcoded
-- name: "use id ({{ lab_net_prefix }}.5) as the DNS server"
+- name: "use id ({{ dns_server_ip }}) as the DNS server"
   community.general.nmcli:
     conn_name: enp1s0
     type: ethernet
     dns4:
-    - "{{ lab_net_prefix }}.5"
+    - "{{ dns_server_ip }}"
     state: present
 
 - name: brings up the interface to load change
