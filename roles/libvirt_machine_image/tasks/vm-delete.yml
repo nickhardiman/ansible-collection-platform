@@ -30,7 +30,7 @@
     cmd: "virsh vol-list images"
   register: r_pool_list
 - debug:
-    var: r_pool_list['stdout']
+    var: r_pool_list['stdout_lines']
 
 # !!! no volume module in virt
 #- name: List available pools
