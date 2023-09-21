@@ -1,0 +1,29 @@
+---
+# tasks file 
+
+# !!! can't remember why I bothered putting in this check. 
+#   subscription-manager status
+# slows things down by a couple minutes. 
+# check 
+# If the instance volume already exists, 
+# assume this work has already been done.
+- name: "{{ fqdn }} already registered? "
+  ansible.builtin.command: 
+    cmd: /sbin/subscription-manager status
+  register: r_sm_status
+  ignore_errors: yes
+- name: "registered?"
+  ansible.builtin.set_fact:
+    f_registered: "{{ not r_sm_status.failed }}"
+- ansible.builtin.debug:
+    var: f_registered
+
+
+# https://console.redhat.com/ansible/automation-hub/repo/published/redhat/rhel_system_roles/docs/README_rhc/
+- name: "register as user {{ rhsm_user }} and auto-subscribe to content"
+  include_role: redhat.rhel_system_roles.rhc
+  vars:
+    rhc_insights:
+      state: present
+      autoupdate: true
+      remediation: present
