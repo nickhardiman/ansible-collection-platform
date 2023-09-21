@@ -78,13 +78,15 @@ kexec-tools
 # These packages provide a selection of sysadmin tools for manual work.
 bash-completion
 bind-utils
+lsof
 mlocate
 nmap-ncat
-python3-cryptography
 vim
 tcpdump
 telnet
 tree
+# This package is for creating a server private key.
+python3-cryptography
 # These packages are required for applications.
 {% for package in RPMs %}
 {{ package }}

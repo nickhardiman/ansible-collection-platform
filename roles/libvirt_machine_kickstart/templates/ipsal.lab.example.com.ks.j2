@@ -79,12 +79,15 @@ kexec-tools
 # These packages provide a selection of sysadmin tools for manual work.
 bash-completion
 bind-utils
+lsof
 mlocate
 nmap-ncat
 vim
 tcpdump
 telnet
 tree
+# This package is for creating a server private key.
+python3-cryptography
 # These packages are required for applications.
 {% for package in RPMs %}
 {{ package }}
@@ -114,12 +117,6 @@ chmod 0600 /home/{{ user_ansible_name }}/.ssh/authorized_keys
 restorecon -vR /home/{{ user_ansible_name }}/.ssh/
 # Allow passwordless sudo.
 echo "ansible_user      ALL=(ALL)       NOPASSWD: ALL" > /etc/sudoers.d/ansible_user
-
-# subscription
-# !!! moved to another role
-# use your Red Hat developer account
-#/usr/sbin/subscription-manager register --username={{ rhsm_user }} --password='{{ rhsm_password }}'
-#/usr/sbin/subscription-manager attach --pool={{ rhsm_pool_id }}
 
 %end
 

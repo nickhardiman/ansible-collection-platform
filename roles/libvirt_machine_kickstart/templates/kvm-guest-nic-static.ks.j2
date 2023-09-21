@@ -22,7 +22,9 @@ keyboard --vckeymap=gb
 
 # network
 # fixed IP address
-network --device=enp1s0 --bootproto=static --ip={{ nics[0]['ip'] }} --netmask=255.255.255.0 --gateway={{ lab_net_prefix }}.1 --activate
+{% for nic in nics %}
+network  --device={{ nic['name'] }} --bootproto=static --ip={{ nic['ip'] }} --netmask=255.255.255.0 --gateway={{ lab_net_prefix }}.1 --activate
+{% endfor %}
 network  --hostname={{ fqdn }}
 
 # licences and repos
@@ -55,7 +57,9 @@ logvol swap    --fstype="swap" --size=256    --name=swap --vgname=rhel
 skipx
 services --enabled="chronyd"
 selinux --enforcing
-firewall --enabled --http --ssh
+# open firewall
+{% set service_options = " --service=" ~ net_services|join(" --service=") %}
+firewall --enabled {{ service_options }}
 
 # after installing the OS
 # skip anaconda's prompt "Installation complete. Press ENTER to quit:"
@@ -77,12 +81,15 @@ kexec-tools
 # These packages provide a selection of sysadmin tools for manual work.
 bash-completion
 bind-utils
+lsof
 mlocate
 nmap-ncat
 vim
 tcpdump
 telnet
 tree
+# This package is for creating a server private key.
+python3-cryptography
 # These packages are required for applications.
 {% for package in RPMs %}
 {{ package }}
