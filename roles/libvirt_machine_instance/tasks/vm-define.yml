@@ -2,15 +2,26 @@
 # reference: 
 # https://docs.ansible.com/ansible/latest/collections/community/libvirt/virt_module.html
 
+# using shell cp, not module
+# this struggles with large image file copy
+#- name: copy the cached storage file
+#  ansible.builtin.copy:
+#      src: "/var/lib/libvirt/images/{{ fqdn }}-base.qcow2"
+#      remote_src: yes
+#      dest: "/var/lib/libvirt/images/{{ fqdn }}.qcow2"
+#      owner: qemu
+#      group: qemu
+#      mode: '0644'
+#   
 - name: copy the cached storage file
-  ansible.builtin.copy:
-      src: "/var/lib/libvirt/images/{{ fqdn }}-base.qcow2"
-      remote_src: yes
-      dest: "/var/lib/libvirt/images/{{ fqdn }}.qcow2"
-      owner: qemu
-      group: qemu
-      mode: '0644'
-  
+  ansible.builtin.command:
+    cmd: >
+        cp
+        /var/lib/libvirt/images/{{ fqdn }}-base.qcow2
+        /var/lib/libvirt/images/{{ fqdn }}.qcow2
+    creates: "/var/lib/libvirt/images/{{ fqdn }}.qcow2"
+
+
 # Defining a VM and making is autostart with host. VM will be off after this task
 - name: Find out what the remote machine's mounts are
   ansible.builtin.slurp:
