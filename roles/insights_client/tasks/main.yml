@@ -1,30 +1,24 @@
 ---
 # tasks file 
 
-# !!! can't remember why I bothered putting in this check. 
-#   subscription-manager status
-# slows things down by a couple minutes. 
 # check 
-# If the instance volume already exists, 
-# assume this work has already been done.
-- name: "{{ fqdn }} already registered? "
+# If status check passes, 
+# assume this server is already registered to insights.
+- name: "{{ fqdn }} already registered to insights? "
   ansible.builtin.command: 
-    cmd: /sbin/subscription-manager status
-  register: r_sm_status
+    cmd: /usr/bin/insights-client --status
+  register: r_ic_status
   ignore_errors: yes
 - name: "registered?"
   ansible.builtin.set_fact:
-    f_registered: "{{ not r_sm_status.failed }}"
+    f_ic_registered: "{{ not r_ic_status.failed }}"
 - ansible.builtin.debug:
-    var: f_registered
+    var: f_ic_registered
 
 
-# https://console.redhat.com/ansible/automation-hub/repo/published/redhat/rhel_system_roles/docs/README_rhc/
-- name: "register as user {{ rhsm_user }} and auto-subscribe to content"
-  ansible.builtin.include_role: 
-    name: redhat.rhel_system_roles.rhc
-  vars:
-    rhc_insights:
-      state: present
-      autoupdate: true
-      remediation: present
+# !!! many failures trying to use 
+# https://console.redhat.com/ansible/automation-hub/repo/published/redhat/rhel_system_roles/content/role/rhc/
+- name: "Register this system with Red Hat Insights"
+  ansible.builtin.shell:
+    cmd: insights-client --register
+  when: not f_ic_registered
