@@ -3,15 +3,11 @@
 
 # runs 
 # /sbin/subscription-manager register --auto-attach --username user --password 'pass'
+
+
 # !!! can't remember why I bothered putting in this check. 
 #   subscription-manager status
 # slows things down by a couple minutes. 
-
-# !!! debug 
-- debug: 
-    var: rhsm_user
-
-
 # check 
 # If the instance volume already exists, 
 # assume this work has already been done.
@@ -41,16 +37,6 @@
     server_proxy_hostname: "{{ server_proxy_hostname | default(omit) }}"
     server_proxy_port: "{{ server_proxy_port | default(omit) }}"
   # when: 
-  # - inventory_hostname != "gateway.lab.example.com"
-  # - inventory_hostname != "gateway.site1.lab.example.com"
   # - f_registered == false
 
-# - name: "register as user {{ rhsm_user }} and auto-subscribe to content (gateway only)"
-#   community.general.redhat_subscription:
-#     state: present
-#     username: "{{ rhsm_user }}"
-#     password: "{{ rhsm_password }}"
-#     auto_attach: true
-#   when: 
-#   - inventory_hostname == "gateway.lab.example.com" or inventory_hostname == "gateway.site1.lab.example.com"
-#   - f_registered == false
+
