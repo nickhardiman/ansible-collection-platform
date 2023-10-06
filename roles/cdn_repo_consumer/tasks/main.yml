@@ -23,6 +23,13 @@
     var: f_registered
 
 
+# !!! is this module setting values in /etc/rhsm/rhsm.conf?
+# or is it subscription-manager --proxyuser ...  --noproxy ...?
+# I suspect one of them sets fields like this. 
+#    proxy_hostname =
+# but there is no way here to set this. 
+#    no_proxy =
+
 # error after 2 minutes
 #   TimeoutError: [Errno 110] Connection timed out
 # probably means network is broken eg. proxy settings are missing. 
@@ -38,5 +45,3 @@
     server_proxy_port: "{{ server_proxy_port | default(omit) }}"
   # when: 
   # - f_registered == false
-
-

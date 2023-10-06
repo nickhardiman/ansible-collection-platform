@@ -6,13 +6,13 @@
 
 
 # Clear any current registrations eg. with RedHat CDN
-# - name: Unregister from Subscription Manager, if registered
-#   community.general.redhat_subscription:
-#     state: absent
+- name: Unregister from RHSM using Subscription Manager
+  community.general.redhat_subscription:
+    state: absent
 
-# # !!! Redundant?
-# - name: Force a clear-out
-#   command: subscription-manager clean
+# safety
+- name: Force a clear-out
+  command: subscription-manager clean
 
 
 - name: Install the katello-ca-consumer RPM from satellite server
@@ -23,7 +23,8 @@
     disable_gpg_check: true 
 
 
-# !!! proxy bypass list missing. 
+# !!! proxy issues 
+# if proxy is set but proxy bypass list is missing, 
 # causes strange error, presumably related to squid on gateway. 
 # TASK [Register to Satellite] ***********************************************
 # fatal: [aaphub.build.example.com]: FAILED! => 
@@ -32,16 +33,30 @@
 # com.redhat.RHSM1.Error: {\"exception\": \"ConnectionOSErrorException\", 
 # \"severity\": \"error\", \"message\": \"('satellite.build.example.com', 
 # 443, '/rhsm', OSError('Tunnel connection failed: 500 Internal Server Error'))\"}"}
-- name: Tell subscription-manager to bypass proxy
+#
+#
+# - name: Tell subscription-manager to bypass proxy
+#   ansible.builtin.command:
+#     cmd: subscription-manager config --server.no_proxy=example.com
+
+# !!! weird failure
+# TASK [nick.platform.satellite_repo_consumer : Register to Satellite] **********************************
+# fatal: [aapcontrol.build.example.com]: FAILED! => {"changed": false, 
+# "msg": "Failed to register with 'None': com.redhat.RHSM1.Error: 
+# {\"exception\": \"RestlibException\", \"severity\": \"error\", \"message\": 
+# \"Couldn't find Organization '1'.\"}"}
+
+# - name: Register to Satellite
+#   community.general.redhat_subscription:
+#     state: present
+#     activationkey: ak-build-rhel-9
+#     org_id: 1
+#     server_hostname: "satellite.{{ lab_domain }}"
+
+# Shell alternative
+- name: Register using Subscription Manager
   ansible.builtin.command:
-    cmd: subscription-manager config --server.no_proxy=example.com
-
-- name: Register to Satellite
-  community.general.redhat_subscription:
-    state: present
-    activationkey: ak-build-rhel-9
-    org_id: 1
-
+    cmd: /usr/sbin/subscription-manager register --org="Default_Organization" --activationkey="ak-build-rhel-9"
 
 # https://docs.ansible.com/ansible/latest/collections/ansible/builtin/yum_module.html
 - name: Clear yum cache 

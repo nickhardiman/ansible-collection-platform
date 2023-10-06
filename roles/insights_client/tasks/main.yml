@@ -18,6 +18,14 @@
 
 # !!! many failures trying to use 
 # https://console.redhat.com/ansible/automation-hub/repo/published/redhat/rhel_system_roles/content/role/rhc/
+# probably due to proxy settings.  
+# ??? no setting in /etc/insights-client/insights-client.conf
+# see 
+#    !!! proxy bypass list missing. 
+# in satellite_repo_consumer role. 
+#    tail -f /var/log/insights-client/insights-client.log 
+# on managed node.
+
 - name: "Register this system with Red Hat Insights"
   ansible.builtin.shell:
     cmd: insights-client --register
