@@ -22,8 +22,9 @@
     # validate_certs: no
     disable_gpg_check: true 
 
-
-# !!! proxy issues 
+# community.general.redhat_subscription issues
+# community/general/plugins/modules/redhat_subscription.py
+# !!! problem - proxy issues 
 # if proxy is set but proxy bypass list is missing, 
 # causes strange error, presumably related to squid on gateway. 
 # TASK [Register to Satellite] ***********************************************
@@ -34,35 +35,44 @@
 # \"severity\": \"error\", \"message\": \"('satellite.build.example.com', 
 # 443, '/rhsm', OSError('Tunnel connection failed: 500 Internal Server Error'))\"}"}
 #
-#
+# solution
 # - name: Tell subscription-manager to bypass proxy
 #   ansible.builtin.command:
 #     cmd: subscription-manager config --server.no_proxy=example.com
-
-# !!! weird failure
+#
+# !!! problem - can't find default organization
 # TASK [nick.platform.satellite_repo_consumer : Register to Satellite] **********************************
 # fatal: [aapcontrol.build.example.com]: FAILED! => {"changed": false, 
 # "msg": "Failed to register with 'None': com.redhat.RHSM1.Error: 
 # {\"exception\": \"RestlibException\", \"severity\": \"error\", \"message\": 
 # \"Couldn't find Organization '1'.\"}"}
+#
+# solution
+# use organization label. 
+# don't use organization ID (it has a space in it) or name. 
+# see hammer organization list
 
-# - name: Register to Satellite
-#   community.general.redhat_subscription:
-#     state: present
-#     activationkey: ak-build-rhel-9
-#     org_id: 1
-#     server_hostname: "satellite.{{ lab_domain }}"
+- name: Register to Satellite
+  community.general.redhat_subscription:
+    state: present
+    activationkey: "{{ activationkey }}"
+    org_id: "Default_Organization"
+    #org_id: "Default Organization"
+    #org_id: "{{ org_id }}"
+    #server_hostname: "satellite.{{ lab_domain }}"
 
-# Shell alternative
-- name: Register using Subscription Manager
-  ansible.builtin.command:
-    cmd: /usr/sbin/subscription-manager register --org="Default_Organization" --activationkey="ak-build-rhel-9"
+# # Shell alternative
+# - name: Register using Subscription Manager
+#   ansible.builtin.command:
+#     cmd: >
+#       /usr/sbin/subscription-manager register 
+#       --org="{{ org }}" 
+#       --activationkey="{{ activationkey }}"
 
-# https://docs.ansible.com/ansible/latest/collections/ansible/builtin/yum_module.html
-- name: Clear yum cache 
-  command: yum clean all
+# # https://docs.ansible.com/ansible/latest/collections/ansible/builtin/yum_module.html
+# - name: Clear yum cache 
+#   ansible.builtin.command: yum clean all
 
-
-- name: subscription-manager refresh
-  command: subscription-manager refresh
+# - name: subscription-manager refresh
+#   ansible.builtin.command: subscription-manager refresh
 

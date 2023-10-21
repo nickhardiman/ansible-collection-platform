@@ -1,2 +1,6 @@
 ---
 # defaults file 
+#activationkey: ak-build-rhel-9
+activationkey: ak-build-aap
+org_id: 1
+org: Default Organization
