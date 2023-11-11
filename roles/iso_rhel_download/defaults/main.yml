@@ -5,16 +5,20 @@ redhat_token_url: https://sso.redhat.com/auth/realms/redhat-external/protocol/op
 download_directory: /var/lib/libvirt/images/
 
 # File downloads are identified by SHA256 checksum, not file name (rhel-9.2-x86_64-dvd.iso).
-# Use the Subscription Management API to find the right checksum for 
+# Use the Subscription Management API to find the right checksum for
 # image "Red Hat Enterprise Linux 9.2 Binary DVD"
-# ??? Why not figure this out automatically? 
-# Subscription Management API endpoint has a Swagger API documentation page here: 
+# !!! Why not figure this out automatically?
+# Subscription Management API endpoint has a Swagger API documentation page here:
 # https://access.redhat.com/management/api/rhsm
-# Try executing: Get /images/rhel/{Version}/{Arch} 
+# Try executing: Get /images/rhel/{Version}/{Arch}
 # where Version is 9.2 and Arch is x86_64.
 subscription_management_api_base: https://api.access.redhat.com/management/v1/images
 download_timeout: 3600
 
+# !!! upgrade to 9.3 and 8.9
+
+# "imageName": "Red Hat Enterprise Linux 9.2 Binary DVD"
+# "filename": "rhel-9.2-x86_64-dvd.iso"
 checksum_rhel_9_dvd: a18bf014e2cb5b6b9cee3ea09ccfd7bc2a84e68e09487bb119a98aa0e3563ac2
 download_href_rhel_9_dvd: '{{ subscription_management_api_base }}/{{ checksum_rhel_9_dvd }}/download'
 
@@ -22,6 +26,14 @@ download_href_rhel_9_dvd: '{{ subscription_management_api_base }}/{{ checksum_rh
 # "filename": "rhel-8.8-x86_64-dvd.iso"
 checksum_rhel_8_dvd: 517abcc67ee3b7212f57e180f5d30be3e8269e7a99e127a3399b7935c7e00a09
 download_href_rhel_8_dvd: '{{ subscription_management_api_base }}/{{ checksum_rhel_8_dvd }}/download'
+
+# !!! where is RHEL 7?
+# I see it at https://access.redhat.com/downloads/content/rhel
+# but not in the API list
+# "imageName": "Red Hat Enterprise Linux 7.9 Binary DVD"
+# "filename": "rhel-server-7.9-x86_64-dvd.iso"
+checksum_rhel_7_dvd: 2cb36122a74be084c551bc7173d2d38a1cfb75c8ffbc1489c630c916d1b31b25
+download_href_rhel_7_dvd: '{{ subscription_management_api_base }}/{{ checksum_rhel_7_dvd }}/download'
 
 checksum_sha256: "{{ checksum_rhel_9_dvd }}"
 download_href: "{{ download_href_rhel_9_dvd }}"

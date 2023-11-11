@@ -7,24 +7,8 @@
 # This smaller version is more fitting for my smaller brain.
 #  🧠 <-- actual size
 
-
-# authenticate
-
-# https://access.redhat.com/articles/3626371
-# Using APIs for Red Hat services
-
-# Generating a new offline token
-#
-# Open the API token page. 
-# https://access.redhat.com/management/api
-# Generate a token.
-# Store the token in an environment variable.
-# export OFFLINE_TOKEN=eyJh...(about 600 more characters)...xmtyM
-# problem?
-# I got a reply containing a 400 code and this error:
-# {"error": "invalid_grant", "error_description": "Invalid refresh token. Token client and authorized client don't match"}
-# when I used an automation hub token from
-# https://console.redhat.com/ansible/automation-hub/token
+# For more information about the authorization token, see the bootstrap.sh script.
+# https://github.com/nickhardiman/ansible-playbook-source/blob/main/bootstrap.sh#L59
 
 - name: Copy offline token from environment variable
   ansible.builtin.set_fact:
