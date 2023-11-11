@@ -1,2 +1,4 @@
 ---
 # defaults file 
+
+relayhost: "message.supply.example.com"

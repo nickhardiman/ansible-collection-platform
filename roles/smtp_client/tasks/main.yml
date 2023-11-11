@@ -18,14 +18,18 @@
     immediate: yes
     state: enabled
 
-- name: "Mail from null client {{ inventory_hostname }} to relay message.{{ lab_domain }}"
+- name: Mail settings
+  debug:
+    msg: "from null client {{ inventory_hostname }} to relay message.{{ lab_domain }}"
+
+- name: "Configure null client"
   ansible.builtin.include_role: 
     name: rhel-system-roles.postfix
   vars: 
     postfix_conf:
       myhostname: "{{ inventory_hostname }}"
       myorigin: "$mydomain"
-      relayhost: "message.{{ lab_domain }}"
+      relayhost: "{{ relayhost }}"
       inet_interfaces: "loopback-only"
       mydestination: ""
 
