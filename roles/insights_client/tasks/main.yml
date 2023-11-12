@@ -4,7 +4,7 @@
 # check 
 # If status check passes, 
 # assume this server is already registered to insights.
-- name: "{{ fqdn }} already registered to insights? "
+- name: "Is {{ fqdn }} already registered to insights? "
   ansible.builtin.command: 
     cmd: /usr/bin/insights-client --status
   register: r_ic_status
