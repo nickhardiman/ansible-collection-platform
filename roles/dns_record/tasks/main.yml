@@ -9,9 +9,9 @@
     - "Add A name: {{ record_a_name }}, A value: {{ record_a_value }} to zone {{ lab_domain_forward }}"
     - "Add PTR name: {{ record_ptr_name }}, PTR value: {{ record_ptr_value }} to zone {{ lab_domain_reverse }}"
 
-- name: "Add DNS A record to {{ ipa_host }}"
+- name: "Add DNS A record to {{ ipa_fqdn }}"
   community.general.ipa_dnsrecord:
-    ipa_host: "{{ ipa_host }}"
+    ipa_host: "{{ ipa_fqdn }}"
     ipa_pass: "{{ admin_password }}"
     state: present
     zone_name: "{{ lab_domain_forward }}"
@@ -20,9 +20,9 @@
     record_value: "{{ record_a_value }}"
     validate_certs: false
 
-- name: "Add DNS PTR record to {{ ipa_host }}"
+- name: "Add DNS PTR record to {{ ipa_fqdn }}"
   community.general.ipa_dnsrecord:
-    ipa_host: "{{ ipa_host }}"
+    ipa_host: "{{ ipa_fqdn }}"
     ipa_pass: "{{ admin_password }}"
     state: present
     zone_name: "{{ lab_domain_reverse }}"
