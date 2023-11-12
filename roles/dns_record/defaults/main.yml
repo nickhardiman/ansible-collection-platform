@@ -11,3 +11,6 @@ record_a_name: ipsal
 record_a_value: 192.168.134.5
 record_ptr_name: 5
 record_ptr_value: ipsal.lab.example.com
+
+# ipa_host:  "id.{{ lab_domain }}"
+ipa_host:  "id.build.example.com"

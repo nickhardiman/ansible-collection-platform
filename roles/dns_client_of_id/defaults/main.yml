@@ -1,3 +1,13 @@
 ---
 # defaults file 
 lab_net_prefix: "192.168.134"
+
+# Find id's IPv4 address of the first interface
+# only works in build network
+# https://docs.ansible.com/ansible/latest/collections/community/general/nmcli_module.html
+# Ansible facts (hostvars['id.build.example.com']['ansible_facts') may not be set. 
+# Use playbook hostvars instead.
+# dns_server_fqdn: "{{ 'id.' + lab_domain }}"
+# dns_server_ip: "{{ hostvars[dns_server_fqdn]['nics'][0]['ip'] }}"
+
+dns_server_ip: 192.168.13.4

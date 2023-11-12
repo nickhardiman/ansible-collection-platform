@@ -4,3 +4,4 @@
 activationkey: ak-build-aap
 org_id: 1
 org: Default Organization
+satellite_fqdn: satellite.build.example.com
