@@ -1,15 +1,13 @@
 # Ansible Collection - nick.platform
 
-Documentation for the collection.
+Shared code for my home lab playbooks. 
+These create a network of virtual machines on three fresh RHEL 9 hosts.
 
-Create a network of virtual machines on a fresh RHEL 9 host. 
-I created this for experiments on a 64GB PC and RHEL 9. 
+* https://github.com/nickhardiman/ansible-playbook-source
+* https://github.com/nickhardiman/ansible-playbook-build
+* https://github.com/nickhardiman/ansible-playbook-supply
 
-resources
+Two collections so far. 
 
-* libvirt volume storage pool images. This is the default that would get created anyway. ISO files and disk images go here.
-* libvirt network netpublic0. Virtual machines that serve the network go here. I don't touch the default NAT network default.
-* libvirt networks private0 and private1. These are for experiments with administering those hard-to-reach places.
-
-
-
+* https://github.com/nickhardiman/ansible-collection-platform
+* https://github.com/nickhardiman/ansible-collection-app
