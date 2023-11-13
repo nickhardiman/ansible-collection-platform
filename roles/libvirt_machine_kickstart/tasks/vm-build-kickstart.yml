@@ -36,7 +36,7 @@
 
 # wait for install to complete. 
 # time out after 20 retries * 30 seconds = 10 minutes
-- name: wait up to 10 minutes for vm install and shut down
+- name: "wait up to 10 minutes for install and shut down of {{ inventory_hostname }}"
   community.libvirt.virt:
     command: status
     name: "{{ fqdn }}"

@@ -1,4 +1,5 @@
 ---
+# !!! this taking minutes
 
 # check for a cached storage base file.
 #   "/var/lib/libvirt/images/{{ fqdn }}-base.qcow2"
