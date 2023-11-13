@@ -7,7 +7,9 @@
 # fix
 # echo "remember_owner = 0" >>  /etc/libvirt/qemu.conf
 
-- name: start the VM
+# !!! risky mix of fqdn and inventory_hostname
+
+- name: "Start VM {{ fqdn }}"
   community.libvirt.virt:
     name: "{{ fqdn }}"
     state: running
@@ -16,7 +18,7 @@
 # These tasks use libvirt only.
 # They don't check anything at the OS level, such as waiting for a connection. 
 
-- name: get domain info
+- name: "Get domain info for {{ fqdn }}"
   community.libvirt.virt:
     name: "{{ fqdn }}"
     command: info
