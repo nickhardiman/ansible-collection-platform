@@ -1,12 +1,14 @@
 ---
 # tasks file for virtualization-host
 
-- name: Install the 'Virtualization Host' environment group
+- name: Install the 'Virtualization Host' environment group and friends
   dnf:
     name: 
     - '@virtualization-host-environment'
     - python3-libvirt
     - virt-install
+    - cockpit
+    - cockpit-machines
     state: present
 
 # https://docs.ansible.com/ansible/latest/collections/ansible/builtin/systemd_module.html
