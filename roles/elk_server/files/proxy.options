@@ -1,6 +1,0 @@
-# https://www.elastic.co/guide/en/elasticsearch/reference/current/advanced-configuration.html#set-jvm-options
--Dhttp.proxyHost=gateway.lab.example.com
--Dhttp.proxyPort=3128
--Dhttps.proxyHost=gateway.lab.example.com
--Dhttps.proxyPort=3128
-
