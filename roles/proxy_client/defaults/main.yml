@@ -1,0 +1,3 @@
+---
+# defaults file
+proxy_server: gateway.supply.example.com

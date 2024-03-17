@@ -77,6 +77,9 @@ user_root_password_encrypted: "{{ lookup('ansible.builtin.pipe', '/usr/bin/opens
 user_admin_name: nick
 user_admin_password: Password;1
 user_admin_password_encrypted: "{{ lookup('ansible.builtin.pipe', '/usr/bin/openssl passwd  -6 --salt=G3GIlnUH.JqcrAQl ' + user_admin_password  | quote ) }}"
+# !!! add workstation pubkey to vault via bootstrap script
+# user_admin_public_key: |
+#   add this to vault!
 #
 # system account for management
 user_ansible_name: ansible_user
@@ -84,5 +87,6 @@ user_ansible_name: ansible_user
 user_ansible_password: Password;1
 user_ansible_password_encrypted: "{{ lookup('ansible.builtin.pipe', '/usr/bin/openssl passwd  -6 --salt=G3GIlnUH.JqcrAQl ' + user_ansible_password  | quote ) }}"
 # This key is for SSH login.
+# !!! read this from vault
 user_ansible_public_key: |
   ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDquGwhrEjnjr/5mtq31gPVF448SDxdpqbYVdrQ34yttzgaJcMPaK5ukywY9UDvAs7MCzoheK3jG9ba6Io7a57X86jfcRsXnBxXSQhyTW1QZempHmfp0U4ZfTSRvAsZ8Z39pQuk3bB6DerQUars+CJzS4PYPuNbOfGuIkIsFgN59NhOQNh+vxkhpMtCSlMzR4bSydw8oz9NUuFwXrJefHN9w0m+LifUF0/GLx4dOf2AItoF28lTrpcF2cEXS3LfTV3lcZK1GpSKAJliNi2YM+zwTQqKGVk6O8XWHXmfLF0PS9aCqKooO8zjpHfdGJrxADKbfixgA7Mxf1FCy5vhPa5+v9q8XRO61e16VNeQPsvTv8czJC9WFaG3WrNP14GJ/7ycpqQR/g1AOFi0JsnzZDJbE6XdBOFENweEmWnapbqsl85MIm+zUnUot8gRUQakPQ3BtHd7KqwIXEMoo+UrDnHQI1YcBhh9MbS/kfHVe5V/1oKja91iZD+7bnHgQwtKVCk= root@host.build.example.com

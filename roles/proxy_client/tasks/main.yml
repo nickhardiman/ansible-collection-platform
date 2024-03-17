@@ -1,0 +1,12 @@
+---
+# tasks file
+- name: Put a bash script in the home dir
+  ansible.builtin.template:
+    src: proxy.sh.j2
+    dest: ~/proxy.sh
+    mode: '0754'
+
+- name: Add a line to the bash resource file
+  ansible.builtin.lineinfile:
+    path: ~/.bashrc
+    line: source ~/proxy.sh
