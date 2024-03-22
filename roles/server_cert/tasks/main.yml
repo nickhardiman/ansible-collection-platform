@@ -17,8 +17,7 @@
 
 # CA certificate 
 #
-# copy certificate to /etc/pki/ca-trust/source/anchors/
-- name: copy CA certificate to trust anchors directory
+- name: Copy CA certificate to trust anchors /etc/pki/ca-trust/source/anchors/ca-certificate.pem
   ansible.builtin.copy:
     src: /etc/pki/ca-trust/source/anchors/ca-certificate.pem
     #src: ca-certificate.pem
@@ -26,18 +25,17 @@
     mode: '0644'
   register: r_cp_ca_cert
 
-# update-ca-trust
-- name: update libraries of trusted CA certificates
+- name: Update libraries of trusted CA certificates
   ansible.builtin.command:
     cmd: update-ca-trust
   when: r_cp_ca_cert['changed'] == true
 
 # server private key
-# 
+#
 # create private key {{ server_cn }}.key
 # check with 
 #   openssl rsa -check -noout -in {{ server_cn }}.key
-- name: create server private key
+- name: "Create server private key /etc/pki/tls/private/{{ server_cn }}.key"
   community.crypto.openssl_privatekey:
     path: "/etc/pki/tls/private/{{ server_cn }}.key"
     mode: '0600'
@@ -49,7 +47,7 @@
 # create certificate and signing request {{ server_cn }}.csr
 # View attributes and values in the CSR. 
 #   openssl req -text -in {{ server_cn }}.csr
-- name: generate an OpenSSL CSR (Certificate Signing Request) for the server
+- name: Generate an OpenSSL CSR (Certificate Signing Request) for the server
   community.crypto.openssl_csr_pipe:
     privatekey_path: "/etc/pki/tls/private/{{ server_cn }}.key"
     common_name: "{{ server_cn }}"
@@ -66,20 +64,20 @@
 # Check the server certificate and key match by comparing the modulus of each.
 #   openssl x509 -noout -modulus -in {{ server_cn }}.pem | openssl md5
 #   openssl rsa  -noout -modulus -in {{ server_cn }}.key | openssl md5
-- name: sign certificate with our CA
+- name: Sign certificate with our CA
   community.crypto.x509_certificate_pipe:
     csr_content: "{{ r_csr['csr'] }}"
     provider: ownca
     ownca_path: /etc/pki/ca-trust/source/anchors/ca-certificate.pem
     ownca_privatekey_path: /etc/pki/tls/private/ca-certificate.key
     # !!! removed encryption. See bootstrap.sh
-    #ownca_privatekey_passphrase: "{{ ca_secret_passphrase }}"
+    # ownca_privatekey_passphrase: "{{ ca_secret_passphrase }}"
     ownca_not_after: +365d  # valid for one year
     ownca_not_before: "-1d"  # valid since yesterday
   delegate_to: "{{ groups['hypervisor'][0] }}"
   register: r_cert
 
-- name: Write certificate file on server
+- name: "Write certificate to /etc/pki/tls/certs/{{ server_cn }}.pem"
   copy:
     dest: "/etc/pki/tls/certs/{{ server_cn }}.pem"
     content: "{{ r_cert['certificate'] }}"
