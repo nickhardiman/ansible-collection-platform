@@ -1,0 +1,140 @@
+# !!! not actually a template yet. No vars.
+# docs
+#   https://docs.haproxy.org/2.4/configuration.html
+#---------------------------------------------------------------------
+# Global settings
+#
+global
+    # View activity log messages with these commands.
+    #   grep haproxy /var/log/messages
+    #   journalctl -u haproxy.service
+    log         127.0.0.1 local2
+
+    chroot      /var/lib/haproxy
+    pidfile     /var/run/haproxy.pid
+    maxconn     4000
+    user        haproxy
+    group       haproxy
+    daemon
+
+    # turn on stats unix socket
+    stats socket /var/lib/haproxy/stats
+
+    # utilize system-wide crypto-policies
+    ssl-default-bind-ciphers PROFILE=SYSTEM
+    ssl-default-server-ciphers PROFILE=SYSTEM
+    #ssl-default-bind-options ssl-min-ver TLSv1.2
+
+#---------------------------------------------------------------------
+# common defaults that all the 'listen' and 'backend' sections will
+# use if not designated in their block
+#
+defaults
+    mode                    http
+    log                     global
+    option                  httplog
+    option                  dontlognull
+    option http-server-close
+    # option forwardfor       except 127.0.0.0/8
+    option                  redispatch
+    retries                 3
+    timeout http-request    10s
+    timeout queue           1m
+    timeout connect         10s
+    timeout client          1m
+    timeout server          1m
+    timeout http-keep-alive 10s
+    timeout check           10s
+    maxconn                 3000
+
+#---------------------------------------------------------------------
+# redirect port 80 to port 443
+#
+frontend www_http
+  bind *:80
+  http-request redirect scheme https unless { ssl_fc }
+
+#---------------------------------------------------------------------
+# one web site with many paths
+#
+frontend www_https
+  mode tcp
+  bind *:443
+  option tcplog
+
+  acl tls              req.ssl_hello_type 1
+  tcp-request inspect-delay 5s
+  tcp-request content accept if tls
+
+  acl host_aapcontrol  req.ssl_sni -i     aapcontrol.hardiman.consulting
+  acl host_aaphub      req.ssl_sni -i     aaphub.hardiman.consulting
+  acl host_antora      req.ssl_sni -i     antora.hardiman.consulting
+  acl host_git         req.ssl_sni -i     git.hardiman.consulting
+  acl host_grafana     req.ssl_sni -i     grafana.hardiman.consulting
+  acl host_id          req.ssl_sni -i     id.hardiman.consulting
+  acl host_satellite   req.ssl_sni -i     satellite.hardiman.consulting
+  acl host_secret      req.ssl_sni -i     secret.hardiman.consulting
+
+  use_backend https_aapcontrol if host_aapcontrol
+  use_backend https_aaphub     if host_aaphub
+  use_backend https_antora     if host_antora
+  use_backend https_git        if host_git
+  use_backend https_grafana    if host_grafana
+  use_backend https_id         if host_id
+  use_backend https_satellite  if host_satellite
+  use_backend https_secret     if host_secret
+
+#---------------------------------------------------------------------
+# proxy to where
+#
+
+backend https_aapcontrol
+        mode tcp
+        option ssl-hello-chk
+        server aapcontrol.build.example.com 192.168.13.7:443
+
+backend https_aaphub
+        mode tcp
+        option ssl-hello-chk
+        server     aaphub.build.example.com 192.168.13.6:443
+
+backend https_antora
+        mode tcp
+        option ssl-hello-chk
+        server customer.supply.example.com 192.168.15.9:443
+
+backend https_git
+        mode   tcp
+        option ssl-hello-chk
+        server       git.source.example.com 192.168.11.7:443
+
+# not yet configured /etc/grafana/grafana.ini
+# https://grafana.com/docs/grafana/latest/setup-grafana/set-up-https/
+backend https_grafana
+        mode   http
+        option ssl-hello-chk
+        server   monitor.supply.example.com 192.168.15.8:3000
+
+backend https_id
+        mode tcp
+        option ssl-hello-chk
+        server         id.build.example.com 192.168.13.4:443
+
+backend https_satellite
+        mode   tcp
+        option ssl-hello-chk
+        server     satellite.build.example.com 192.168.13.5:443
+
+backend https_secret
+        mode   tcp
+        option ssl-hello-chk
+        server      secret.source.example.com 192.168.11.8:443
+
+#---------------------------------------------------------------------
+# dashboard
+#
+listen stats
+    bind :9000
+    stats enable
+    stats uri /
+#---------------------------------------------------------------------

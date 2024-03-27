@@ -1,0 +1,95 @@
+# !!! not actually a template yet. No vars.
+# docs
+#   https://docs.haproxy.org/2.4/configuration.html
+#---------------------------------------------------------------------
+# Global settings
+#
+global
+    # View activity log messages with these commands.
+    #   grep haproxy /var/log/messages
+    #   journalctl -u haproxy.service
+    log         127.0.0.1 local2
+
+    chroot      /var/lib/haproxy
+    pidfile     /var/run/haproxy.pid
+    maxconn     4000
+    user        haproxy
+    group       haproxy
+    daemon
+
+    # turn on stats unix socket
+    stats socket /var/lib/haproxy/stats
+
+    # utilize system-wide crypto-policies
+    ssl-default-bind-ciphers PROFILE=SYSTEM
+    ssl-default-server-ciphers PROFILE=SYSTEM
+    #ssl-default-bind-options ssl-min-ver TLSv1.2
+
+#---------------------------------------------------------------------
+# common defaults that all the 'listen' and 'backend' sections will
+# use if not designated in their block
+#
+defaults
+    mode                    http
+    log                     global
+    option                  httplog
+    option                  dontlognull
+    option http-server-close
+    option forwardfor       except 127.0.0.0/8
+    option                  redispatch
+    retries                 3
+    timeout http-request    10s
+    timeout queue           1m
+    timeout connect         10s
+    timeout client          1m
+    timeout server          1m
+    timeout http-keep-alive 10s
+    timeout check           10s
+    maxconn                 3000
+
+#---------------------------------------------------------------------
+# redirect port 80 to port 443
+#
+frontend www_http
+  bind *:80
+  http-request redirect scheme https unless { ssl_fc }
+
+#---------------------------------------------------------------------
+# one web site with many paths
+#
+frontend www_https
+  bind *:443 ssl crt /etc/letsencrypt/live/hardiman.consulting/combined.pem
+  default_backend web
+
+  acl host_aapcontrol  hdr_dom(host)      aapcontrol.hardiman.consulting
+  acl host_aaphub      hdr_dom(host)      aaphub.hardiman.consulting
+  acl host_antora      hdr_dom(host)      antora.hardiman.consulting
+
+  use_backend https_aapcontrol if host_aapcontrol
+  use_backend https_aaphub     if host_aaphub
+  use_backend https_antora     if host_antora
+
+#---------------------------------------------------------------------
+# proxy to where
+#
+backend web
+  server customer.supply.example.com 192.168.15.9:80
+   
+backend https_aapcontrol
+  server aapcontrol.build.example.com 192.168.13.7:443 ssl verify required ca-file /etc/pki/ca-trust/source/anchors/ca.build.example.com-cert.pem
+   
+backend https_aaphub
+  server     aaphub.build.example.com 192.168.13.6:443 ssl verify required ca-file /etc/pki/ca-trust/source/anchors/ca.build.example.com-cert.pem
+   
+backend https_antora
+  server  customer.supply.example.com 192.168.15.9:80
+
+#---------------------------------------------------------------------
+# dashboard
+#
+listen stats
+    bind :9000
+    stats enable
+    stats uri /
+
+#---------------------------------------------------------------------
