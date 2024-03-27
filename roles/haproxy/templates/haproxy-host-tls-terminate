@@ -52,7 +52,17 @@ defaults
 #
 frontend www_http
   bind *:80
-  http-request redirect scheme https unless { ssl_fc }
+  # http-request redirect scheme https unless { ssl_fc }
+  
+  acl host_aapcontrol  hdr_dom(host)      aapcontrol.hardiman.consulting
+  acl host_aaphub      hdr_dom(host)      aaphub.hardiman.consulting
+  acl host_antora      hdr_dom(host)      antora.hardiman.consulting
+
+  acl path_letsencrypt path_beg           /.well-known/acme-challenge/
+  use_backend http_aapcontrol_letsencrypt if host_aapcontrol path_letsencrypt
+  use_backend http_aaphub_letsencrypt     if host_aaphub     path_letsencrypt
+  use_backend http_antora_letsencrypt     if host_antora     path_letsencrypt
+
 
 #---------------------------------------------------------------------
 # one web site with many paths
@@ -73,7 +83,22 @@ frontend www_https
 # proxy to where
 #
 backend web
+   server customer.supply.example.com 192.168.15.9:80
+  
+# letsencrypt files are stored in an apache docroot
+
+backend  http_aapcontrol_letsencrypt
   server customer.supply.example.com 192.168.15.9:80
+  http-request replace-path (.*) /letsencrypt/aapcontrol/\1
+
+backend  http_aaphub_letsencrypt
+  server customer.supply.example.com 192.168.15.9:80
+  http-request replace-path (.*) /letsencrypt/aaphub/\1
+
+backend  http_antora_letsencrypt
+  server customer.supply.example.com 192.168.15.9:80
+  http-request replace-path (.*) /letsencrypt/antora/\1
+
    
 backend https_aapcontrol
   server aapcontrol.build.example.com 192.168.13.7:443 ssl verify required ca-file /etc/pki/ca-trust/source/anchors/ca.build.example.com-cert.pem
@@ -82,7 +107,7 @@ backend https_aaphub
   server     aaphub.build.example.com 192.168.13.6:443 ssl verify required ca-file /etc/pki/ca-trust/source/anchors/ca.build.example.com-cert.pem
    
 backend https_antora
-  server  customer.supply.example.com 192.168.15.9:80
+  server customer.supply.example.com 192.168.15.9:80
 
 #---------------------------------------------------------------------
 # dashboard
