@@ -61,13 +61,16 @@ frontend www_https
   bind *:443 ssl crt /etc/letsencrypt/live/hardiman.consulting/combined.pem
   default_backend web
   use_backend antora     if { path_beg -i /antora/ }
-  use_backend aapcontrol if { path_beg -i /aapcontrol/ }
-  use_backend aaphub     if { path_beg -i /aaphub/ }
-  use_backend git        if { path_beg -i /git/ }
-  use_backend grafana    if { path_beg -i /grafana/ }
-  use_backend id         if { path_beg -i /id/ }
-  use_backend satellite  if { path_beg -i /satellite/ }
-  use_backend secret     if { path_beg -i /secret/ }
+
+# these cause issues because of javascript, embedded urls, and maybe squid proxy
+#   use_backend aapcontrol if { path_beg -i /aapcontrol/ }
+# possible fix for aaphub is to use automationhub_main_url 
+#   use_backend aaphub     if { path_beg -i /aaphub/ }
+#   use_backend git        if { path_beg -i /git/ }
+#   use_backend grafana    if { path_beg -i /grafana/ }
+#   use_backend id         if { path_beg -i /id/ }
+#   use_backend satellite  if { path_beg -i /satellite/ }
+#   use_backend secret     if { path_beg -i /secret/ }
 
 #---------------------------------------------------------------------
 # proxy to where
@@ -87,62 +90,75 @@ backend web
 # and add it back to the "Location" header of replies 
 # (that header is usually not present - it's used for redirects).
 
+# ok
 backend antora
   mode http
   server customer.supply.example.com 192.168.15.9:80
   #server customer.supply.example.com 192.168.15.9:443 ssl verify required ca-file /etc/pki/ca-trust/source/anchors/ca.supply.example.com-cert.pem
-  http-request set-header host customer.supply.example.com
-  http-request replace-path /antora(.*) \1
+  http-request  set-header     host customer.supply.example.com
+  http-request  replace-path   /antora(.*) \1
   http-response replace-header Location (.*) /antora/\1
 
-backend aapcontrol
-  mode http
-  server aapcontrol.build.example.com 192.168.13.7:443 ssl verify required ca-file /etc/pki/ca-trust/source/anchors/ca.build.example.com-cert.pem
-  http-request set-header host aapcontrol.build.example.com
-  http-request replace-path /aapcontrol(.*) \1
-  http-response replace-header Location (.*) /aapcontrol/\1
+# # !!! can't login
+# backend aapcontrol
+#   mode http
+#   server aapcontrol.build.example.com 192.168.13.7:443 ssl verify required ca-file /etc/pki/ca-trust/source/anchors/ca.build.example.com-cert.pem
+#   http-request set-header host aapcontrol.build.example.com
+#   http-request replace-path /aapcontrol(.*) \1
+#   http-response replace-header Location (.*) /aapcontrol/\1
 
-backend aaphub
-  mode http
-  server aaphub.build.example.com 192.168.13.6:443 ssl verify required ca-file /etc/pki/ca-trust/source/anchors/ca.build.example.com-cert.pem
-  http-request set-header host aaphub.build.example.com
-  http-request replace-path /aaphub(.*) \1
-  http-response replace-header Location (.*) /aaphub/\1
+# # !!! blank
+# backend aaphub
+#   mode http
+#   server aaphub.build.example.com 192.168.13.6:443 ssl verify required ca-file /etc/pki/ca-trust/source/anchors/ca.build.example.com-cert.pem
+#   http-request set-header host aaphub.build.example.com
+#   http-request replace-path /aaphub(.*) \1
+#   http-response replace-header Location (.*) /aaphub/\1
 
-backend git
-  mode http
-  server git.source.example.com 192.168.11.7:443 ssl verify required ca-file /etc/pki/ca-trust/source/anchors/ca.source.example.com-cert.pem
-  http-request set-header host git.source.example.com
-  http-request replace-path /git(.*) \1
-  http-response replace-header Location (.*) /git/\1
+# # !!! half a page
+# backend git
+#   mode http
+#   server git.source.example.com 192.168.11.7:443 ssl verify required ca-file /etc/pki/ca-trust/source/anchors/ca.source.example.com-cert.pem
+#   http-request set-header host git.source.example.com
+#   http-request replace-path /git(.*) \1
+#   # http-response replace-header Location (.*) /git/\1
+#   http-response replace-header Location https://git.source.example.com(.*) /git/\1
 
-backend grafana
-  mode http
-  server monitor.supply.example.com 192.168.15.8:3000 
-  http-request set-header host monitor.supply.example.com
-  http-request replace-path /grafana(.*) \1
-  http-response replace-header Location (.*) /grafana/\1
+# # !!! 503 error
+# backend grafana
+#   mode http
+#   server monitor.supply.example.com 192.168.15.8:3000 
+#   http-request set-header host monitor.supply.example.com
+#   http-request replace-path /grafana(.*) \1
+#   http-response replace-header Location (.*) /grafana/\1
 
-backend id
-  mode http
-  server id.build.example.com 192.168.13.4:443 ssl verify required ca-file /etc/pki/ca-trust/source/anchors/ca.build.example.com-cert.pem
-  http-request set-header host id.build.example.com
-  http-request replace-path /id(.*) \1
-  http-response replace-header Location (.*) /id/\1
+# # !!! 503 error
+# backend id
+#   mode http
+#   server id.build.example.com 192.168.13.4:443 ssl verify required ca-file /etc/pki/ca-trust/source/anchors/ca.build.example.com-cert.pem
+#   http-request set-header host id.build.example.com
+#   http-request replace-path /id(.*) \1
+#   # http-response replace-header Location (.*) /id/\1
+#   http-response replace-header Location https://id.build.example.com(.*) /id/\1
 
-backend satellite
-  mode http
-  server satellite.build.example.com 192.168.13.5:443 ssl verify required ca-file /etc/pki/ca-trust/source/anchors/ca.build.example.com-cert.pem
-  http-request set-header host satellite.build.example.com
-  http-request replace-path /satellite(.*) \1
-  http-response replace-header Location (.*) /satellite/\1
+# # !!! /users/login is blank page. OIDC /users/extlogin redirects to secret which redirects to satellite.
+# backend satellite
+#   mode http
+#   server satellite.build.example.com 192.168.13.5:443 ssl verify required ca-file /etc/pki/ca-trust/source/anchors/ca.build.example.com-cert.pem
+#   http-request set-header host satellite.build.example.com
+#   http-request replace-path /satellite(.*) \1
+#   # http-response replace-header Location (.*) /satellite/\1
+#   http-response replace-header Location https://satellite.build.example.com(.*) /satellite\1
 
-backend secret
-  mode http
-  server secret.source.example.com 192.168.11.8:443 ssl verify required ca-file /etc/pki/ca-trust/source/anchors/ca.source.example.com-cert.pem
-  http-request set-header host secret.source.example.com
-  http-request replace-path /secret(.*) \1
-  http-response replace-header Location (.*) /secret/\1
+# # !!! https://secret.source.example.com/ embedded in body. would require lua rewrites.
+# backend secret
+#   mode http
+#   server secret.source.example.com 192.168.11.8:443 ssl verify required ca-file /etc/pki/ca-trust/source/anchors/ca.source.example.com-cert.pem
+#   http-request set-header host secret.source.example.com
+#   http-request replace-path /secret/$ /secret/auth/
+#   http-request replace-path /secret(.*) \1
+#   # http-response replace-header Location (.*) /secret/\1
+#   http-response replace-header Location https://secret.source.example.com(.*) /secret\1
 
 
 #---------------------------------------------------------------------
