@@ -1,22 +1,19 @@
 ---
-# tasks file 
-- name: install packages
-  ansible.builtin.yum: 
-    name: 
-    - haproxy
-    state: latest 
+# tasks file
 
-- name: Start and enable service httpd
-  ansible.builtin.service:
-    name: httpd
-    enabled: yes
-    state: started
+- name: Install packages
+  ansible.builtin.yum:
+    name:
+      - haproxy
+    state: latest
 
 - name: Copy configuration
   ansible.builtin.template:
-    src: index.html.j2
-    dest: "/var/www/{{ apache_host }}/index.html"
-    owner: "{{ apache_user }}"
-    group: "{{ apache_group }}"
-    mode: '0664'
+    src: haproxy.cfg.j2
+    dest: "/etc/haproxy/haproxy.cfg"
 
+- name: Start and enable service httpd
+  ansible.builtin.service:
+    name: haproxy
+    enabled: true
+    state: started
