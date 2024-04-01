@@ -1,13 +1,15 @@
 ---
-app_fw_services: 
-- ssh
-- http
-- https
-- freeipa-ldap
-- freeipa-ldaps
-- dns
-#app_fw_ports: 
-#- 53/udp
+# defaults file 
+default_password: 'Password;1'
+admin_password: "{{ default_password }}"
+ds_password: "{{ default_password }}"
 
-ds_password: 'Password;1'
-admin_password: 'Password;1'
+app_fw_services:
+  - ssh
+  - http
+  - https
+  - freeipa-ldap
+  - freeipa-ldaps
+  - dns
+# app_fw_ports:
+# - 53/udp

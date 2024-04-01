@@ -1,6 +1,7 @@
 ---
 # defaults file 
-admin_password: 'Password;1'
+default_password: 'Password;1'
+admin_password: "{{ default_password }}"
 
 lab_net_prefix: "192.168.134"
 lab_mac_prefix: "52:54:00:02"

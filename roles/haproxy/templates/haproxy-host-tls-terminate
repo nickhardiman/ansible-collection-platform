@@ -8,7 +8,8 @@ global
     # View activity log messages with these commands.
     #   grep haproxy /var/log/messages
     #   journalctl -u haproxy.service
-    log         127.0.0.1 local2
+    # log         127.0.0.1 local2 debug
+    log /dev/log local2 debug
 
     chroot      /var/lib/haproxy
     pidfile     /var/run/haproxy.pid
@@ -53,53 +54,58 @@ defaults
 frontend www_http
   bind *:80
   # http-request redirect scheme https unless { ssl_fc }
-  
-  acl host_aapcontrol  hdr_dom(host)      aapcontrol.hardiman.consulting
-  acl host_aaphub      hdr_dom(host)      aaphub.hardiman.consulting
-  acl host_antora      hdr_dom(host)      antora.hardiman.consulting
 
+# letsencrypt checks a unique file for each host.
   acl path_letsencrypt path_beg           /.well-known/acme-challenge/
-  use_backend http_aapcontrol_letsencrypt if host_aapcontrol path_letsencrypt
-  use_backend http_aaphub_letsencrypt     if host_aaphub     path_letsencrypt
-  use_backend http_antora_letsencrypt     if host_antora     path_letsencrypt
-
+  use_backend http_letsencrypt if path_letsencrypt
 
 #---------------------------------------------------------------------
-# one web site with many paths
+# one physical host, many vhosts
 #
 frontend www_https
   bind *:443 ssl crt /etc/letsencrypt/live/hardiman.consulting/combined.pem
   default_backend web
-
+#
+# TLS is terminated here so we can read request headers.
+# get the FQDN from the host request header.
   acl host_aapcontrol  hdr_dom(host)      aapcontrol.hardiman.consulting
   acl host_aaphub      hdr_dom(host)      aaphub.hardiman.consulting
   acl host_antora      hdr_dom(host)      antora.hardiman.consulting
+  acl host_git         hdr_dom(host)      git.hardiman.consulting
+  acl host_grafana     hdr_dom(host)      grafana.hardiman.consulting
+  acl host_id          hdr_dom(host)      id.hardiman.consulting
+  acl host_satellite   hdr_dom(host)      satellite.hardiman.consulting
+  acl host_secret      hdr_dom(host)      secret.hardiman.consulting
 
   use_backend https_aapcontrol if host_aapcontrol
   use_backend https_aaphub     if host_aaphub
   use_backend https_antora     if host_antora
+  use_backend https_git        if host_git
+  use_backend  http_grafana    if host_grafana
+  use_backend https_id         if host_id
+  use_backend https_satellite  if host_satellite
+  use_backend https_secret     if host_secret
+
+#---------------------------------------------------------------------
+# backends
+# letsencrypt files are stored in an apache docroot here.
+#   customer.supply.example.com
+#   /var/www/customer.supply.example.com/letsencrypt/
+#   
+# default web server
+backend web
+   server customer.supply.example.com 192.168.15.9:80
+
+# /var/www/customer.supply.example.com/letsencrypt/.well-known/acme-challenge
+backend  http_letsencrypt
+  server customer.supply.example.com 192.168.15.9:80
+  http-request replace-path (.*) /letsencrypt/\1
+
 
 #---------------------------------------------------------------------
 # proxy to where
 #
-backend web
-   server customer.supply.example.com 192.168.15.9:80
-  
-# letsencrypt files are stored in an apache docroot
 
-backend  http_aapcontrol_letsencrypt
-  server customer.supply.example.com 192.168.15.9:80
-  http-request replace-path (.*) /letsencrypt/aapcontrol/\1
-
-backend  http_aaphub_letsencrypt
-  server customer.supply.example.com 192.168.15.9:80
-  http-request replace-path (.*) /letsencrypt/aaphub/\1
-
-backend  http_antora_letsencrypt
-  server customer.supply.example.com 192.168.15.9:80
-  http-request replace-path (.*) /letsencrypt/antora/\1
-
-   
 backend https_aapcontrol
   server aapcontrol.build.example.com 192.168.13.7:443 ssl verify required ca-file /etc/pki/ca-trust/source/anchors/ca.build.example.com-cert.pem
    
@@ -107,7 +113,23 @@ backend https_aaphub
   server     aaphub.build.example.com 192.168.13.6:443 ssl verify required ca-file /etc/pki/ca-trust/source/anchors/ca.build.example.com-cert.pem
    
 backend https_antora
-  server customer.supply.example.com 192.168.15.9:80
+  server   customer.supply.example.com 192.168.15.9:80
+
+backend https_git
+  server        git.source.example.com 192.168.11.7:443 ssl verify required ca-file /etc/pki/ca-trust/source/anchors/ca.source.example.com-cert.pem
+
+backend http_grafana
+  server    monitor.supply.example.com 192.168.15.8:3000
+
+backend https_id
+  server          id.build.example.com 192.168.13.4:443 ssl verify required ca-file /etc/pki/ca-trust/source/anchors/ca.build.example.com-cert.pem
+
+backend https_satellite
+  server   satellite.build.example.com 192.168.13.5:443 ssl verify required ca-file /etc/pki/ca-trust/source/anchors/ca.build.example.com-cert.pem
+   
+backend https_secret
+  server        secret.source.example.com 192.168.11.8:443 ssl verify required ca-file /etc/pki/ca-trust/source/anchors/ca.source.example.com-cert.pem
+
 
 #---------------------------------------------------------------------
 # dashboard
