@@ -14,6 +14,16 @@
   ansible.builtin.set_fact:
     offline_token: "{{ lookup('ansible.builtin.env', 'OFFLINE_TOKEN') }}"
 
+- name: Display token if verbose
+  ansible.builtin.debug:
+    verbosity: 1
+    var: offline_token
+
+- name: Display token if verbose
+  ansible.builtin.debug:
+    verbosity: 1
+    var: jwt_red_hat_api
+
 # Generating an access token
 - name: 'Authenticate on the Red Hat Portal'
   ansible.builtin.uri:
@@ -24,7 +34,7 @@
     body:
       grant_type: 'refresh_token'
       client_id: 'rhsm-api'
-      refresh_token: '{{ offline_token }}'
+      refresh_token: '{{ jwt_red_hat_api }}'
   register: r_request_refresh_token
   no_log: "{{ ansible_verbosity < 1 }}"
 
@@ -67,11 +77,15 @@
 
 # download 
 
+# !!! why not extract checksum from URL?
+# eg. copy 65da7744b9e41ba064627762fd7378c66b77008ec8ab026f1c8c2cf72a86a92b from
+# https://api.access.redhat.com/management/v1/images/65da7744b9e41ba064627762fd7378c66b77008ec8ab026f1c8c2cf72a86a92b/download
+
 # Task downloads to a temporary file, something like 
 #   /home/ansible_user/.ansible/tmp/ansible-tmp-1693932672.055527-43704-15290345689509/tmpu7fo8za
 # then copies to the final location. 
 # owner (root), permissions (644) and SELinux file type (virt_image_t) shouldn't need work.
-- name: 'Download {{ iso_filename }}, timeout in {{ download_timeout }} seconds'
+- name: 'Download to {{ download_directory }}/{{ iso_filename }}, timeout in {{ download_timeout }} seconds'
   ansible.builtin.get_url:
     url: '{{ download_href }}'
     dest: '{{ download_directory }}/{{ iso_filename }}'

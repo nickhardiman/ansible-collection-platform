@@ -3,6 +3,8 @@
 
 redhat_token_url: https://sso.redhat.com/auth/realms/redhat-external/protocol/openid-connect/token
 download_directory: /var/lib/libvirt/images/
+# JSON Web Token from https://access.redhat.com/management/api
+jwt_red_hat_api: eyJh...(about 600 more characters)...xmtyM
 
 # File downloads are identified by SHA256 checksum, not file name (rhel-9.2-x86_64-dvd.iso).
 # Use the Subscription Management API to find the right checksum for
