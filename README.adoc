@@ -1,0 +1,40 @@
+# Ansible Collection - nick.platform
+
+
+== third attempt, RHEL lab 
+
+WIP
+
+network of virtual machines on one fresh RHEL 10 host.
+
+take the AAP2 work and break up into less choking chunks
+
+* script-rhel-setup
+* ansible-playbook-rhel-lab
+* ansible-collection-platform
+* ansible-collection-vm-gateway
+* ansible-collection-libvirt
+
+
+== second attempt, AAP2 refarch
+
+couple years ago
+
+network of virtual machines on three fresh RHEL 9 hosts.
+
+works, but an absolute monster 
+
+* https://github.com/nickhardiman/ansible-playbook-aap-lab
+* https://github.com/nickhardiman/ansible-collection-platform
+
+== first attempt, RHEL lab
+
+few years ago 
+
+network of virtual machines on three fresh RHEL 9 hosts.
+
+* https://github.com/nickhardiman/ansible-playbook-source
+* https://github.com/nickhardiman/ansible-playbook-build
+* https://github.com/nickhardiman/ansible-playbook-supply
+* https://github.com/nickhardiman/ansible-collection-platform
+* https://github.com/nickhardiman/ansible-collection-app
