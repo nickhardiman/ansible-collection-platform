@@ -1,0 +1,19 @@
+---
+# reference: 
+# https://docs.ansible.com/ansible/latest/collections/community/libvirt/virt_module.html
+
+# Define a VM and set to autostart with host. 
+# VM will be off after this.
+
+- name: Define vm from xml and set autostart
+  community.libvirt.virt:
+    command: define
+    xml: "{{ config_xml }}"
+    # can't use this lookup, file is not on local machine. 
+    #xml: "{{ lookup('file', '~/libvirt/' + fqdn + '.xml') }}"
+
+- name: start the guest when the host boots up
+  community.libvirt.virt:
+    name: "{{ fqdn }}"
+    autostart: yes
+

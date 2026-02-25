@@ -1,7 +1,7 @@
 # local key pair
 #
-- name: add ansible's private key to the control node
-  copy:
+- name: Add ansible's private key to the control node
+  ansible.builtin.copy:
     content: "{{ control_node_private_key }}"
     dest: "{{ control_node_private_key_file }}"
     mode: '0600'
@@ -10,8 +10,8 @@
   become: no
 
 # occasionally useful to keep a local copy of the pubkey 
-- name: also store the public key on the control node
-  copy:
+- name: Also store the public key on the control node
+  ansible.builtin.copy:
     content: "{{ managed_node_public_key }}"
     dest: "{{ control_node_public_key_file }}"
     mode: '0644'

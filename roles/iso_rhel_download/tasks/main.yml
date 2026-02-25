@@ -1,12 +1,6 @@
 ---
 # tasks file for iso_rhel_download
 
-# A simpler version of the far superior role by Steffen Scheib.
-# Use this instead:
-# https://github.com/sscheib/ansible-role-rhel_iso_kickstart/tree/main
-# This smaller version is more fitting for my smaller brain.
-#  🧠 <-- actual size
-
 # For more information about the authorization token, see the bootstrap.sh script.
 # https://github.com/nickhardiman/ansible-playbook-source/blob/main/bootstrap.sh#L59
 

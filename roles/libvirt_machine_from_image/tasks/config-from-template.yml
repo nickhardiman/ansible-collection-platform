@@ -1,0 +1,13 @@
+- name: "Read template config from '{{ config_template }}'"
+  ansible.builtin.set_fact:
+    config_xml: "{{ lookup('template', config_template) }}"
+
+- name: "Copy rendered template to '{{ work_dir }}/'"
+  ansible.builtin.template:
+    src: "{{ config_template }}"
+    dest: "{{ work_dir }}/"
+
+- name: "Display VM config for {{ vm_name }}"
+  ansible.builtin.debug:
+    msg: "{{ config_xml }}"
+    verbosity: 1

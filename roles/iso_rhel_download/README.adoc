@@ -1,0 +1,76 @@
+= iso_rhel_download
+
+A simpler version of the far superior 
+https://github.com/sscheib/ansible-role-rhel_iso_kickstart/[ansible-role-rhel_iso_kickstart role by Steffen Scheib].
+Check out this code:
+https://github.com/sscheib/ansible-role-rhel_iso_kickstart/blob/main/tasks/download_iso.yml
+This smaller version is more fitting for my smaller brain.
+🧠 <-- actual size
+
+
+I wrote role https://github.com/nickhardiman/ansible-collection-platform/tree/main/roles/iso_rhel_download
+to download RHEL install DVD ISO files after the hypervisor is installed.
+ISO files can be downloaded using one of Red Hat's APIs.
+Anyone with an RHSM account can use Red Hat's APIs.
+
+You can download Red Hat software after authenticating with an OAuth2 token.
+For no good reason, both the API token and the Hub token are called "offline tokens".
+
+File downloads are identified by SHA256 checksum, not file name.
+Use the Subscription Management API to find the image you want and the right checksum for it.
+(!!! Why not figure this out automatically?)
+
+== try in a web browser
+
+Subscription Management API endpoint has a Swagger API documentation page here:
+https://access.redhat.com/management/api/rhsm
+use a web browser to try it out. 
+
+* URL: https://access.redhat.com/management/api/rhsm
+* Action: Get /images/rhel/{Version}/{Arch}
+* Version:  9.2 
+* Arch:  x86_64
+
+This returns a list of ISOs you can find at https://api.access.redhat.com/management/v1/images, like this.
+
+----
+{
+  "body": [
+    {
+      "imageName": "A Red Hat ISO",
+      "filename": "rhel.iso",
+      "arch": "x86_64",
+      "checksum": "1234567890",
+      "datePublished": "2024-04-22T11:15:29.000Z",
+      "downloadHref": "https://api.access.redhat.com/management/v1/images/1234567890/download"
+    }
+  ]
+}
+----
+
+== try with curl
+
+Using a web client like curl requires a JWT.
+Open the API token page https://access.redhat.com/management/api. 
+Click the "Generate Token" button to display your new token.
+
+----
+----
+
+
+== try with this role
+
+----
+- hosts: servers
+  roles:
+    - role: nick.platform.iso_rhel_download
+      vars: 
+        checksum_sha256: '1234567890'
+        download_href: 'https://api.access.redhat.com/management/v1/images/1234567890/download'
+----
+
+License
+-------
+
+BSD
+

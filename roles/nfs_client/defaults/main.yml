@@ -1,0 +1,16 @@
+---
+# defaults file
+
+directories_to_import:
+  - mount_point: /var/lib/pulp
+    user: pulp
+    group: pulp
+    source: gateway.{{ lab_domain }}:/var/nfs/projects/pulp
+    options: defaults,_netdev,nosharecache
+    selinux_file_context_type: var_lib_t
+  - mount_point: /var/lib/pulp/pulpcore_static
+    user: pulp
+    group: pulp
+    source: gateway.{{ lab_domain }}:/var/nfs/projects/pulp/pulpcore_static
+    options: 'defaults,_netdev,nosharecache,context="system_u:object_r:httpd_sys_content_rw_t:s0"'
+    selinux_file_context_type: httpd_sys_rw_content_t

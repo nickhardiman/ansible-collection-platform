@@ -1,0 +1,20 @@
+---
+# tasks file for hosts_file
+
+- name: Backup already taken?
+  ansible.builtin.stat:
+    path: /var/tmp/hosts
+    get_checksum: false
+  register: r_hosts_backup
+
+- name: Backup /etc/hosts
+  ansible.builtin.copy:
+    src: /etc/hosts
+    dest: /var/tmp/hosts
+    remote_src: true
+  when: not r_hosts_backup.stat.exists
+
+- name: "Copy from installer /etc/hosts to {{ inventory_hostname }}:/etc/hosts"
+  ansible.builtin.copy:
+    src: /etc/hosts
+    dest: /etc/hosts

@@ -1,0 +1,86 @@
+---
+# tasks file
+# tasks follow:
+# https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/9/html/managing_file_systems/deploying-an-nfs-server_managing-file-systems
+
+- name: Install the nfs-utils package
+  ansible.builtin.dnf:
+    name: nfs-utils
+    state: present
+
+- name: Edit the /etc/nfs.conf file
+  ansible.builtin.copy:
+    src: nfs-v4-only.conf
+    dest: /etc/nfs.conf
+    owner: root
+    group: root
+    mode: '0644'
+
+# systemctl mask --now rpc-statd.service rpcbind.service rpcbind.socket
+- name: Disable all NFSv3-related services
+  ansible.builtin.systemd_service:
+    name: "{{ item }}"
+    enabled: false
+    masked: true
+  loop:
+    - rpc-statd.service
+    - rpcbind.service
+    - rpcbind.socket
+
+- name: Create a directory that you want to share
+  ansible.builtin.file:
+    path: "{{ item.directory }}"
+    state: directory
+    owner: "{{ item.user }}"
+    group: "{{ item.group }}"
+    mode: '2770'
+    setype: "{{ item.selinux_file_context_type }}"
+    # recurse: true
+  loop: "{{ directories_to_export }}"
+
+- name: Add an export point to the /etc/exports file for each directory
+  ansible.builtin.lineinfile:
+    path: /etc/exports.d/pulp.exports
+    line: "{{ item.directory }}  {{ item.nfs_options }}"
+    create: true
+    owner: root
+    group: root
+    mode: '0644'
+  loop: "{{ directories_to_export }}"
+  notify: Reexport
+
+# - name: Force all notified handlers to run at this point, not waiting for normal sync points
+#   ansible.builtin.meta: flush_handlers
+
+- name: Open the relevant ports in firewalld
+  ansible.posix.firewalld:
+    service: nfs
+    permanent: true
+    state: enabled
+    immediate: true
+
+- name: Enable and start the NFS server
+  ansible.builtin.systemd_service:
+    name: nfs-server
+    enabled: true
+    state: started
+
+- name: Load nfs versions from /proc/fs/nfsd/versions
+  ansible.builtin.slurp:
+    src: /proc/fs/nfsd/versions
+  register: r_slurp
+- name: Decode data and store as fact
+  ansible.builtin.set_fact:
+    nfs_versions: "{{ r_slurp.content | ansible.builtin.b64decode }}"
+- name: Display nfs versions
+  ansible.builtin.debug:
+    msg: "/proc/fs/nfsd/versions: {{ r_slurp.content | ansible.builtin.b64decode }}"
+
+- name: Load mount points
+  ansible.builtin.command:
+    cmd: /usr/sbin/exportfs
+  register: r_exportfs
+  changed_when: false
+- name: Display available nfs mounts
+  ansible.builtin.debug:
+    msg: "exported mounts: {{ r_exportfs['stdout_lines'] }}"

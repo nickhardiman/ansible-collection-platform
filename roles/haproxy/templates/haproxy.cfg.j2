@@ -1,13 +1,28 @@
-# !!! not actually a template yet. No vars.
-# docs
-#   https://docs.haproxy.org/2.4/configuration.html
+#---------------------------------------------------------------------
+# Example configuration for a possible web application.  See the
+# full configuration options online.
+#
+#   https://www.haproxy.org/download/1.8/doc/configuration.txt
+#
+#---------------------------------------------------------------------
+
 #---------------------------------------------------------------------
 # Global settings
 #---------------------------------------------------------------------
 global
-    # View activity log messages with these commands.
-    #   grep haproxy /var/log/messages
-    #   journalctl -u haproxy.service
+    # to have these messages end up in /var/log/haproxy.log you will
+    # need to:
+    #
+    # 1) configure syslog to accept network log events.  This is done
+    #    by adding the '-r' option to the SYSLOGD_OPTIONS in
+    #    /etc/sysconfig/syslog
+    #
+    # 2) configure local2 events to go to the /var/log/haproxy.log
+    #   file. A line like the following can be added to
+    #   /etc/sysconfig/syslog
+    #
+    #    local2.*                       /var/log/haproxy.log
+    #
     log         127.0.0.1 local2
 
     chroot      /var/lib/haproxy
@@ -23,7 +38,6 @@ global
     # utilize system-wide crypto-policies
     ssl-default-bind-ciphers PROFILE=SYSTEM
     ssl-default-server-ciphers PROFILE=SYSTEM
-    #ssl-default-bind-options ssl-min-ver TLSv1.2
 
 #---------------------------------------------------------------------
 # common defaults that all the 'listen' and 'backend' sections will
@@ -48,39 +62,29 @@ defaults
     maxconn                 3000
 
 #---------------------------------------------------------------------
-# redirect port 80 to port 443
-#
-frontend www_http
-  bind *:80
-  http-request redirect scheme https unless { ssl_fc }
+# main frontend which proxys to the backends
+#---------------------------------------------------------------------
+frontend main
+    bind *:5000
+    acl url_static       path_beg       -i /static /images /javascript /stylesheets
+    acl url_static       path_end       -i .jpg .gif .png .css .js
+
+    use_backend static          if url_static
+    default_backend             app
 
 #---------------------------------------------------------------------
-# one web site with many paths
-#
-frontend www_https
-  bind *:443 ssl crt /etc/letsencrypt/live/hardiman.consulting/combined.pem
-  default_backend web
-  use_backend antora     if { path_beg -i /antora/ }
+# static backend for serving up images, stylesheets and such
+#---------------------------------------------------------------------
+backend static
+    balance     roundrobin
+    server      static 127.0.0.1:4331 check
 
 #---------------------------------------------------------------------
-# proxy to where
-#
-backend web
-   mode http
-   server customer.supply.example.com 192.168.15.9:443 ssl verify required ca-file /etc/pki/ca-trust/source/anchors/ca.supply.example.com-cert.pem
-
-backend antora
-  mode http
-  server customer.supply.example.com 192.168.15.9:80
-  #server customer.supply.example.com 192.168.15.9:443 ssl verify required ca-file /etc/pki/ca-trust/source/anchors/ca.supply.example.com-cert.pem
-  http-request  set-header     host customer.supply.example.com
-  http-request  replace-path   /antora(.*) \1
-  http-response replace-header Location (.*) /antora/\1
-
+# round robin balancing between the various backends
 #---------------------------------------------------------------------
-# dashboard
-#
-listen stats
-    bind :9000
-    stats enable
-    stats uri /
+backend app
+    balance     roundrobin
+    server  app1 127.0.0.1:5001 check
+    server  app2 127.0.0.1:5002 check
+    server  app3 127.0.0.1:5003 check
+    server  app4 127.0.0.1:5004 check

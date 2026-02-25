@@ -1,0 +1,50 @@
+---
+# defaults file 
+
+# misc
+
+net_bridge: brsite30
+
+work_dir: "~/bootstrap-aap-refarch"
+
+fqdn: f34-dev.site3.example.com
+hosts-to-build:
+  - somehost.site3.example.com
+
+# volume
+
+libvirt_pool_dir: "/var/lib/libvirt/images"
+
+image_from_web: false
+base_image_name: Fedora-Cloud-Base-34-1.2.x86_64.qcow2
+base_image_url: https://download.fedoraproject.org/pub/fedora/linux/releases/34/Cloud/x86_64/images/{{ base_image_name }}
+base_image_sha: b9b621b26725ba95442d9a56cbaa054784e0779a9522ec6eafff07c6e6f717ea
+
+image_from_base: false
+
+image_from_template: true
+osinfo: rhel6.10
+image_template: "{{ libvirt_pool_dir }}/template-{{ osinfo }}.qcow2"
+image_new: "{{ libvirt_pool_dir }}/{{ fqdn }}.qcow2"
+
+# domain config
+
+config_from_hypervisor: false
+config_remote_file: "{{ '~/libvirt/' + fqdn + '.xml' }}"
+
+config_from_template: true
+config_template: rhel-6-from-cockpit.xml
+
+# machine
+
+vm_name: "{{ fqdn }}"
+vm_vcpus: 2
+vm_ram_mb: 4096  # 4194304 KiB / 1024 = 4096 MiB
+vm_net: default
+vm_mac_address: 52:54:00:25:00:99
+
+# OS
+
+vm_root_pass: test123
+cleanup_tmp: true
+ssh_key: /root/.ssh/id_rsa.pub

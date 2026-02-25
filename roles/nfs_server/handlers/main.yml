@@ -1,0 +1,13 @@
+---
+# handlers file
+
+- name: Update exports table /var/lib/nfs/etab
+  ansible.builtin.command:
+    cmd: /usr/sbin/exportfs -arv
+  register: r_export
+  listen: Reexport
+
+- name: Display exports table
+  ansible.builtin.debug:
+    var: r_export['stdout_lines']
+  listen: Reexport

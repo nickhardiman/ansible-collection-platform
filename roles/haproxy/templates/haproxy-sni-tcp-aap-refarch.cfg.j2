@@ -1,0 +1,281 @@
+# !!! not actually a template yet. No vars.
+# reference
+#   https://docs.haproxy.org/2.4/configuration.html
+#---------------------------------------------------------------------
+# preparation
+# 
+# !!! SELinux will stop haproxy connecting to unusual ports 
+# eg. 8443 for keycloak, 9090 for cockpit
+# Fix
+#   setsebool -P haproxy_connect_any on
+#
+#---------------------------------------------------------------------
+# Global settings
+#
+global
+    # View activity log messages with these commands.
+    #   grep haproxy /var/log/messages
+    #   journalctl -u haproxy.service
+    log         127.0.0.1 local2
+
+    chroot      /var/lib/haproxy
+    pidfile     /var/run/haproxy.pid
+    maxconn     4000
+    user        haproxy
+    group       haproxy
+    daemon
+
+    # turn on stats unix socket
+    stats socket /var/lib/haproxy/stats
+
+    # utilize system-wide crypto-policies
+    ssl-default-bind-ciphers PROFILE=SYSTEM
+    ssl-default-server-ciphers PROFILE=SYSTEM
+    #ssl-default-bind-options ssl-min-ver TLSv1.2
+
+#---------------------------------------------------------------------
+# common defaults that all the 'listen' and 'backend' sections will
+# use if not designated in their block
+#
+defaults
+    mode                    http
+    log                     global
+    option                  httplog
+    option                  dontlognull
+    option http-server-close
+    # option forwardfor       except 127.0.0.0/8
+    option                  redispatch
+    retries                 3
+    timeout http-request    10s
+    timeout queue           1m
+    timeout connect         10s
+    timeout client          1m
+    timeout server          1m
+    timeout http-keep-alive 10s
+    timeout check           10s
+    maxconn                 3000
+
+#---------------------------------------------------------------------
+# redirect port 80 to port 443
+#
+frontend www_http
+  bind *:80
+  http-request redirect scheme https unless { ssl_fc }
+
+#---------------------------------------------------------------------
+# one web site with many paths
+#
+frontend www_https
+  mode tcp
+  bind *:443
+  option tcplog
+
+  acl tls              req.ssl_hello_type 1
+  tcp-request inspect-delay 5s
+  tcp-request content accept if tls
+
+# site1
+
+  # Three paths lead to the AAP controller's load balancer.
+  # 1. from a machine in the home lab
+  acl host_aapcontrol_site1  req.ssl_sni -i     controlplane.site1.example.com
+  # 2. from the home network
+  acl host_aapcontrol_site1  req.ssl_sni -i     controlplane-site1.home
+  # 3. from the Internet (unlikely)
+  acl host_aapcontrol_site1  req.ssl_sni -i     controlplane-site1.hardiman.consulting
+  #
+  use_backend https_aapcontrol_site1 if host_aapcontrol_site1
+
+  acl host_aaphub_site1      req.ssl_sni -i     automationhub.site1.example.com
+  acl host_aaphub_site1      req.ssl_sni -i     automationhub-site1.home
+  acl host_aaphub_site1      req.ssl_sni -i     automationhub-site1.hardiman.consulting
+  #
+  use_backend https_aaphub_site1     if host_aaphub_site1
+
+  acl host_keycloak_site1    req.ssl_sni -i     misc-rhel8.site1.example.com
+  acl host_keycloak_site1    req.ssl_sni -i     misc-rhel8-site1.home
+  acl host_keycloak_site1    req.ssl_sni -i     misc-rhel8-site1.hardiman.consulting
+  #
+  use_backend https_keycloak_site1     if host_keycloak_site1
+
+  acl host_cockpit_site1  req.ssl_sni -i     cockpit.site1.example.com
+  acl host_cockpit_site1  req.ssl_sni -i     cockpit-site1.home
+  acl host_cockpit_site1  req.ssl_sni -i     cockpit-site1.hardiman.consulting
+  #
+  use_backend https_cockpit_site1 if host_cockpit_site1
+
+
+# site2
+
+  acl host_aapcontrol_site2  req.ssl_sni -i     controlplane.site2.example.com
+  acl host_aapcontrol_site2  req.ssl_sni -i     controlplane-site2.home
+  acl host_aapcontrol_site2  req.ssl_sni -i     controlplane-site2.hardiman.consulting
+  #
+  use_backend https_aapcontrol_site2 if host_aapcontrol_site2
+
+  acl host_aaphub_site2      req.ssl_sni -i     automationhub.site2.example.com
+  acl host_aaphub_site2      req.ssl_sni -i     automationhub-site2.home
+  acl host_aaphub_site2      req.ssl_sni -i     automationhub-site2.hardiman.consulting
+  #
+  use_backend https_aaphub_site2     if host_aaphub_site2
+
+  acl host_keycloak_site2    req.ssl_sni -i     misc-rhel8.site2.example.com
+  acl host_keycloak_site2    req.ssl_sni -i     misc-rhel8-site2.home
+  acl host_keycloak_site2    req.ssl_sni -i     misc-rhel8-site2.hardiman.consulting
+  #
+  use_backend https_keycloak_site2     if host_keycloak_site2
+
+  acl host_cockpit_site2  req.ssl_sni -i     cockpit.site2.example.com
+  acl host_cockpit_site2  req.ssl_sni -i     cockpit-site2.home
+  acl host_cockpit_site2  req.ssl_sni -i     cockpit-site2.hardiman.consulting
+  #
+  use_backend https_cockpit_site2 if host_cockpit_site2
+
+
+# site3
+
+  acl host_satellite_site3  req.ssl_sni -i     satellite.site3.example.com
+  acl host_satellite_site3  req.ssl_sni -i     satellite-site3.home
+  acl host_satellite_site3  req.ssl_sni -i     satellite-site3.hardiman.consulting
+  #
+  use_backend https_satellite_site3 if host_satellite_site3
+
+  acl host_cockpit_site3  req.ssl_sni -i     cockpit.site3.example.com
+  acl host_cockpit_site3  req.ssl_sni -i     cockpit-site3.home
+  acl host_cockpit_site3  req.ssl_sni -i     cockpit-site3.hardiman.consulting
+  #
+  use_backend https_cockpit_site3 if host_cockpit_site3
+
+#   acl host_www_site3  req.ssl_sni -i     www.example.com
+#   acl host_www_site3  req.ssl_sni -i     www.home
+#   acl host_www_site3  req.ssl_sni -i     www.hardiman.consulting
+#   acl host_www_site3  req.ssl_sni -i     antora.hardiman.consulting
+#   acl host_www_site3  req.ssl_sni -i     hardiman.consulting
+#   #
+#   use_backend https_www_local if host_www_site3
+# UNFINISHED
+# NO BACKEND YET
+
+
+#---------------------------------------------------------------------
+# https://www.haproxy.com/documentation/haproxy-configuration-tutorials/core-concepts/stick-tables/
+# https://www.haproxy.com/blog/load-balancing-affinity-persistence-sticky-sessions-what-you-need-to-know
+# https://www.haproxy.com/blog/enable-sticky-sessions-in-haproxy
+# https://www.haproxy.com/blog/client-ip-persistence-or-source-ip-hash-load-balancing
+# sticky source load balancing using a stick table
+# !!! persistent? stick table data will be lost during a reload?
+# requires an SELinux port label. See 
+#   ansible: community.general.seport
+#   CLI: semanage port -a -t http_cache_port_t -p tcp 10000
+
+peers sticktables
+  bind :10000
+  #
+  # On the next line, 'loadbalancer1' 
+  # is the HAProxy server's hostname
+  server gateway.site1.example.com
+  table sticky-sessions type ip size 1m
+
+  # Add these lines to each backend
+  #   balance roundrobin
+  #   stick match         src table sticktables/sticky-sessions
+  #   stick store-request src table sticktables/sticky-sessions
+
+  # simpler alternative
+  # balance source
+
+#---------------------------------------------------------------------
+# proxy to where
+#
+
+# site1
+
+backend https_aapcontrol_site1
+  mode tcp
+  balance roundrobin
+  stick match         src table sticktables/sticky-sessions
+  stick store-request src table sticktables/sticky-sessions
+  option ssl-hello-chk
+  server   controlplane-1.site1.example.com  192.168.21.10:443
+  server   controlplane-2.site1.example.com  192.168.21.11:443
+  server   controlplane-3.site1.example.com  192.168.21.12:443
+
+backend https_aaphub_site1
+  mode tcp
+  balance roundrobin
+  stick match         src table sticktables/sticky-sessions
+  stick store-request src table sticktables/sticky-sessions
+  option ssl-hello-chk
+  server  automationhub-1.site1.example.com  192.168.21.17:443
+  server  automationhub-2.site1.example.com  192.168.21.18:443
+  server  automationhub-3.site1.example.com  192.168.21.19:443
+
+backend https_keycloak_site1
+  mode tcp
+  option ssl-hello-chk
+  server  misc-rhel8.site1.example.com  192.168.21.21:8443
+
+# SELinux will stop haproxy connecting to port 9090.
+# Fix
+#   setsebool -P haproxy_connect_any on
+backend https_cockpit_site1
+  mode tcp
+  option ssl-hello-chk
+  server  host.site1.example.com  192.168.1.253:9090
+
+
+# site2
+
+backend https_aapcontrol_site2
+  mode tcp
+  balance roundrobin
+  stick match         src table sticktables/sticky-sessions
+  stick store-request src table sticktables/sticky-sessions
+  option ssl-hello-chk
+  server   controlplane-1.site2.example.com  192.168.23.10:443
+  server   controlplane-2.site2.example.com  192.168.23.11:443
+  server   controlplane-3.site2.example.com  192.168.23.12:443
+
+backend https_aaphub_site2
+  mode tcp
+  balance roundrobin
+  stick match         src table sticktables/sticky-sessions
+  stick store-request src table sticktables/sticky-sessions
+  option ssl-hello-chk
+  server  automationhub-1.site2.example.com  192.168.23.17:443
+  server  automationhub-2.site2.example.com  192.168.23.18:443
+  server  automationhub-3.site2.example.com  192.168.23.19:443
+
+backend https_keycloak_site2
+  mode tcp
+  option ssl-hello-chk
+  server  misc-rhel8.site2.example.com  192.168.23.21:8443
+
+backend https_cockpit_site2
+  mode tcp
+  option ssl-hello-chk
+  server  host.site2.example.com  192.168.1.162:9090
+
+
+# site3
+
+backend https_satellite_site3
+  mode tcp
+  # balance roundrobin
+  # there is only one server so no sticky session required
+  option ssl-hello-chk
+  server  satellite.site3.example.com  192.168.25.5:443
+
+backend https_cockpit_site3
+  mode tcp
+  option ssl-hello-chk
+  server  host.site3.example.com  192.168.1.252:9090
+
+#---------------------------------------------------------------------
+# dashboard
+#
+listen stats
+    bind :9000
+    stats enable
+    stats uri /
+#---------------------------------------------------------------------

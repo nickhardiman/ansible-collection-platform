@@ -1,0 +1,168 @@
+# kickstart file
+# Kickstart guide is here.
+# https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/9/html/performing_an_advanced_rhel_9_installation/kickstart-commands-and-options-reference_installing-rhel-as-an-experienced-user#kickstart-commands-for-system-configuration_kickstart-commands-and-options-reference
+# This tool creates a kickstart file. 
+# https://access.redhat.com/labs/kickstartconfig/
+
+# command section
+# -----------------------------------
+
+# install
+# don't use graphical install
+text
+# look for an installer DVD
+cdrom
+# Run the Setup Agent on first boot
+firstboot --enable
+
+# l10n (localization)
+lang en_GB.UTF-8
+timezone Europe/London --utc
+keyboard --vckeymap=gb
+
+# network
+# from Ansible group_vars and host_vars
+# dynamic IP address
+{% for nic in hostvars[fqdn]['nics'] %}
+network  --bootproto=dhcp --device={{ nic.name }} --ipv6=auto --activate
+{% endfor %}
+network  --hostname={{ fqdn }}
+
+# licences and repos
+# And have a look at the "subscription" section, in the post section below. 
+#repo --name="AppStream" --baseurl=file:///run/install/repo/AppStream
+eula --agreed
+
+# accounts
+# from the Ansible vault
+# These commands set up password-based login.
+# for key-based login, check out 'sshkey --username=user "ssh_key"'.
+rootpw                                       --iscrypted "{{ user_root_password_encrypted }}"
+user --groups=wheel --name={{ user_admin_name }}   --password="{{ user_admin_password_encrypted }}" --iscrypted --gecos="{{ user_admin_name }}"
+user --groups=wheel --name={{ user_ansible_name }} --password="{{ user_ansible_password_encrypted }}" --iscrypted --gecos="{{ user_ansible_name }}"
+
+# storage 
+# All these partitions must fit in the storage volume.
+ignoredisk --only-use=vda
+# Partition clearing information
+clearpart --all --initlabel
+part /boot/efi --fstype="efi"   --ondisk=vda --size=600 --fsoptions="umask=0077,shortname=winnt"
+part /boot     --fstype="xfs"   --ondisk=vda --size=1024
+part pv.03     --fstype="lvmpv" --ondisk=vda --size={{ hostvars[fqdn]['pv_size'] }}
+volgroup rhel pv.03
+logvol /       --fstype="xfs"  --size={{ hostvars[fqdn]['lv_root'] }}  --name=root --vgname=rhel
+logvol /var    --fstype="xfs"  --size={{ hostvars[fqdn]['lv_var'] }}   --name=var  --vgname=rhel
+logvol swap    --fstype="swap" --size=256    --name=swap --vgname=rhel
+
+# applications and services 
+# Do not configure the X Window System
+skipx
+services --enabled="chronyd"
+selinux --enforcing
+# open firewall
+{% set service_options = " --service=" ~ hostvars[fqdn]['net_services']|join(" --service=") %}
+firewall --enabled {{ service_options }}
+
+# after installing the OS
+# skip anaconda's prompt "Installation complete. Press ENTER to quit:"
+reboot
+
+# extra sections 
+# -----------------------------------
+
+# package selection section
+# guide: 
+# https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/9-beta/html/managing_software_with_yum/index
+%packages
+# This is an environment group of packages.
+# View the full list of groups to choose from by running this command.
+#   dnf group list --hidden
+@^minimal-environment
+# single package
+kexec-tools
+tuned
+# These packages provide a selection of sysadmin tools for manual work.
+bash-completion
+bind-utils
+cockpit
+lsof
+mlocate
+nmap
+nmap-ncat
+vim
+tcpdump
+telnet
+tmux
+tree
+# This package is for creating a server private key.
+python3-cryptography
+# These packages are required for applications.
+{% for package in hostvars[fqdn]['RPMs'] %}
+{{ package }}
+{% endfor %}
+%end
+
+# add-on section
+# kdump kernel crash dump mechanism
+# https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/9-beta/html-single/performing_an_advanced_rhel_installation/index#addon-com_redhat_kdump_kickstart-commands-for-addons-supplied-with-the-rhel-installation-program
+%addon com_redhat_kdump --enable --reserve-mb='auto'
+%end
+#
+
+# last jobs
+%post --log=/root/ks-post.log
+
+# !!! put this in a loop
+# admin user
+# key-based login
+mkdir -m0700 /home/{{ user_admin_name }}/.ssh/
+cat <<EOF >/home/{{ user_admin_name }}/.ssh/authorized_keys
+{{ user_admin_public_key }}
+EOF
+# fix ownership and permissions
+chown -R {{ user_admin_name }}:{{ user_admin_name }} /home/{{ user_admin_name }}/.ssh
+chmod 0600 /home/{{ user_admin_name }}/.ssh/authorized_keys
+# fix up selinux context
+restorecon -vR /home/{{ user_admin_name }}/.ssh/
+# Allow passwordless sudo.
+echo "{{ user_admin_name }}      ALL=(ALL)       NOPASSWD: ALL" > /etc/sudoers.d/{{ user_admin_name }}
+# CLI prompt. Also see "better_prompt" here:
+# https://github.com/nickhardiman/ansible-playbook-aap2-refarch/blob/main/files/aap-bootstrap-1-ssh-sudo.sh
+echo "PS1='[\u@\H \W]$ '" >> /home/{{ user_admin_name }}/.bashrc
+
+# ansible user
+# key-based login
+mkdir -m0700 /home/{{ user_ansible_name }}/.ssh/
+cat <<EOF >/home/{{ user_ansible_name }}/.ssh/authorized_keys
+{{ user_ansible_public_key }}
+{{ user_admin_public_key }}
+EOF
+# fix ownership and permissions
+chown -R {{ user_ansible_name }}:{{ user_ansible_name }} /home/{{ user_ansible_name }}/.ssh
+chmod 0600 /home/{{ user_ansible_name }}/.ssh/authorized_keys
+# fix up selinux context
+restorecon -vR /home/{{ user_ansible_name }}/.ssh/
+# Allow passwordless sudo.
+echo "{{ user_ansible_name }}      ALL=(ALL)       NOPASSWD: ALL" > /etc/sudoers.d/{{ user_ansible_name }}
+# CLI prompt. Also see "better_prompt" here:
+# https://github.com/nickhardiman/ansible-playbook-aap2-refarch/blob/main/files/aap-bootstrap-1-ssh-sudo.sh
+echo "PS1='[\u@\H \W]$ '" >> /home/{{ user_ansible_name }}/.bashrc
+
+# root user
+# key-based login
+mkdir -m0700 /root/.ssh/
+cat <<EOF >/root/.ssh/authorized_keys
+{{ user_ansible_public_key }}
+{{ user_admin_public_key }}
+EOF
+chmod 0600 /root/.ssh/authorized_keys
+# fix up selinux context
+restorecon -vR /root/.ssh/
+# CLI prompt. Also see "better_prompt" here:
+# https://github.com/nickhardiman/ansible-playbook-aap2-refarch/blob/main/files/aap-bootstrap-1-ssh-sudo.sh
+echo "PS1='[\u@\H \W]$ '" >> /root/.bashrc
+
+# cockpit
+systemctl enable cockpit.socket
+
+%end

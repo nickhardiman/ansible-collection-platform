@@ -1,0 +1,91 @@
+---
+# tasks file
+
+# reference
+# https://console.redhat.com/ansible/automation-hub/repo/published/redhat/rhel_system_roles/content/role/rhc/
+# https://access.redhat.com/articles/rhc
+# https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/9/html/automating_system_administration_by_using_rhel_system_roles/using-the-rhc-system-role-to-register-the-system_automating-system-administration-by-using-rhel-system-roles
+# packages
+# rhc                  connects the system to Red Hat hosted services
+# rhc-worker-playbook  is a Python worker for Red Hat connector that launches Ansible Runner
+
+# MQTT, WSS and connect.cloud.redhat.com
+# rhc service constantly polls the remote broker at
+# wss://connect.cloud.redhat.com:443 (see /etc/rhc/config.toml).
+# Scheme wss is "web socket secure".
+#
+# proxy
+#
+# insights-client reads proxy settings from here.
+#  /etc/rhsm/rhsm.conf
+#  /etc/insights-client/insights-client.conf
+# reference
+# Accessing Red Hat Insights through a Firewall/Proxy
+# https://access.redhat.com/solutions/1583183
+#
+# rhcd reads proxy settings from its environment.
+# If the process fails to contact the broker, it stops.
+# reference
+# How to configure HTTP proxy for Remote Host Configuration (rhc)?
+# https://access.redhat.com/solutions/7005002
+# rhcd service fails after a few seconds
+# https://access.redhat.com/solutions/7002427
+
+# !!! duplicate of task in
+# ansible_collections/redhat/rhel_system_roles/roles/rhc/tasks/insights-client.yml 
+# - name: Install required packages
+#   ansible.builtin.yum:
+#     name:
+#       - rhc
+#       - rhc-worker-playbook
+#       - ansible-core
+#     state: present
+#   when: ansible_distribution_major_version > 7
+#   register: r_rhc_pkg
+#
+# - name: Display result
+#   ansible.builtin.debug:
+#     var: r_rhc_pkg
+#     verbosity: 1
+
+- name: Register with rhc
+  ansible.builtin.include_role:
+    name: redhat.rhel_system_roles.rhc
+  vars:
+    rhc_auth:
+      login:
+        username: "{{ rhsm_user }}"
+        password: "{{ rhsm_password }}"
+    rhc_proxy:
+      hostname: "{{ server_proxy_hostname }}"
+      port: "{{ server_proxy_port }}"
+    # rhc_repositories:
+    #   - name: "rhel-9-for-x86_64-baseos-rpms"
+    #     state: enabled
+    #   - name: "rhel-9-for-x86_64-appstream-rpms"
+    #     state: enabled
+    rhc_insights:
+      autoupdate: true
+      remediation: present
+      tags:
+        group: aap_lab
+
+- name: Create systemd drop-in directory for rhcd /etc/systemd/system/rhcd.service.d/
+  ansible.builtin.file:
+    path: /etc/systemd/system/rhcd.service.d/
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: "Tell rhcd about proxy http://{{ server_proxy_hostname }}:{{ server_proxy_port }}"
+  ansible.builtin.copy:
+    content: |
+      [Service]
+      Environment=HTTP_PROXY=http://{{ server_proxy_hostname }}:{{ server_proxy_port }}
+      Environment=HTTPS_PROXY=http://{{ server_proxy_hostname }}:{{ server_proxy_port }}
+      Environment=no_proxy=localhost,127.0.0.1,example.com
+    dest: /etc/systemd/system/rhcd.service.d/proxy.conf
+    owner: root
+    group: root
+    mode: '0644'

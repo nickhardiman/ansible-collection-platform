@@ -1,3 +1,4 @@
 ---
 # defaults file 
 lab_net_prefix: "192.168.134"
+nic_name: "{{ hostvars[fqdn]['nics'][0]['name'] }}"

@@ -1,17 +1,18 @@
 ---
 # https://docs.ansible.com/ansible/latest/collections/community/general/nmcli_module.html
 
-- name: "use gateway {{ lab_net_prefix }}.3 as the DNS server"
+- name: "Use gateway {{ lab_net_prefix }}.3 as the DNS server"
   community.general.nmcli:
     conn_name: enp1s0
     type: ethernet
     dns4:
-    - "{{ lab_net_prefix }}.3"
+      - "{{ lab_net_prefix }}.3"
     state: present
 
-- name: brings up the interface to load change
-  command: 
-    cmd: "nmcli con up enp1s0"
+- name: Brings up the interface to load change
+  ansible.builtin.command: 
+    cmd: "nmcli con up {{ nic_name }}"
   register: r_up
-- debug:
+- name: Display result
+  ansible.builtin.debug:
     var: r_up

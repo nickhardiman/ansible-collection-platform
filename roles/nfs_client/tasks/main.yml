@@ -1,0 +1,31 @@
+---
+# tasks file
+# tasks follow:
+# https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/9/html/managing_file_systems/deploying-an-nfs-server_managing-file-systems
+
+- name: Install the nfs-utils package
+  ansible.builtin.dnf:
+    name: nfs-utils
+    state: present
+
+- name: Create a mount point
+  ansible.builtin.file:
+    path: "{{ item.mount_point }}"
+    state: directory
+    owner: "{{ item.user }}"
+    group: "{{ item.group }}"
+    mode: '2770'
+    setype: "{{ item.selinux_file_context_type }}"
+    # recurse: true
+  loop: "{{ directories_to_import }}"
+
+# Opens /etc/fstab, then adds the following values:
+- name: Mount NFS volumes with auto boot
+  ansible.posix.mount:
+    src: "{{ item.source }}"
+    path: "{{ item.mount_point }}"
+    opts: "{{ item.options }}"
+    boot: true
+    state: mounted
+    fstype: nfs
+  loop: "{{ directories_to_import }}"

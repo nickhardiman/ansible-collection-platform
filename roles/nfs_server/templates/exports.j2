@@ -1,0 +1,6 @@
+# The  file  /etc/exports  contains  a table of local physical file systems on an NFS server that are accessible to NFS clients.  
+# Run 
+#    man exports
+{% for export in exports %}
+{{ export }}
+{% endfor %}

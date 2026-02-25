@@ -1,58 +1,118 @@
 ---
 
-- name: make a kickstart file
+- name: "TEST {{ inventory_hostname }} {{ fqdn }}"
+  ansible.builtin.debug:
+    var: l_var
+    verbosity: 1
+  loop:
+  - "{{ fqdn }}"
+  - "{{ kickstart_path }}"
+  - "{{ kickstart_file }}"
+  - "{{ user_ansible_name }}"
+  - "{{ user_ansible_public_key }}"
+  - "{{ user_admin_public_key }}"
+  - "{{ hostvars[fqdn]['kickstart_template'] }}"
+  - "{{ hostvars[fqdn]['nics'] }}"
+  - "{{ hostvars[fqdn]['RPMs'] }}"
+  - "{{ hostvars[fqdn]['net_services'] }}"
+  loop_control:
+    loop_var: l_var
+
+
+# - name: "If VM image exists, stop play here"
+#   ansible.builtin.meta: end_host
+#   when: hostvars[fqdn]['volume_image_file_exists']
+
+# define the guest
+#
+- name: "Make kickstart file for {{ fqdn }}, {{ inventory_hostname }}:{{ kickstart_path }}/{{ kickstart_file }}"
   ansible.builtin.template:
-    src: "{{ kickstart_template }}"
+    src: "{{ hostvars[fqdn]['kickstart_template'] }}"
     dest: "{{ kickstart_path }}/{{ kickstart_file }}"
     owner: root
     group: root
     mode: '0644'
+  when: not hostvars[fqdn]['volume_image_file_exists']
 
-# define and launch the guest
-#
-- name: make a script
+- name: "Make install script for {{ fqdn }}, {{ inventory_hostname }}:{{ kickstart_path }}/{{ fqdn }}-install.sh"
   ansible.builtin.template:
     src: kvm-install.sh.j2
     dest: "{{ kickstart_path }}/{{ fqdn }}-install.sh"
     owner: root
     group: root
     mode: '0744'
+  when: not hostvars[fqdn]['volume_image_file_exists']
 
+
+# create the guest
+#
+# !!! fails when disk already exists.
+# Could do with a module to compare VM against requested state.
 # assume a failure means the storage file is created and cached
-- name: create
+- name: Create
   ansible.builtin.command:
     cmd: "{{ kickstart_path }}/{{ fqdn }}-install.sh"
   register: r_virt_install
-  # !!! fails when disk already exists. 
-  # Could do with a module to compare VM against requested state.
-  ignore_errors: yes
+  changed_when: r_virt_install.rc == 0
+  ignore_errors: true
+  when: not hostvars[fqdn]['volume_image_file_exists']
 
-- name: display virt-install result
+- name: Display virt-install result
   ansible.builtin.debug:
     var: r_virt_install
+  when: not hostvars[fqdn]['volume_image_file_exists']
 
-# !!! sleep here? 
-# error while evaluating conditional (r_virt_status['status'] == 'shutdown'): 'dict object' has no attribute 'status'.
 
-# wait for install to complete. 
+# !!! sleep here?
+# error while evaluating conditional (r_virt_status['status'] == 'shutdown'): 
+# 'dict object' has no attribute 'status'.
+
+# wait for install to complete.
 # time out after 20 retries * 30 seconds = 10 minutes
-- name: "wait up to 10 minutes for install and shut down of {{ inventory_hostname }}"
+- name: "Wait up to 10 minutes for install and shut down of {{ fqdn }}"
   community.libvirt.virt:
     command: status
     name: "{{ fqdn }}"
   register: r_virt_status
   until: r_virt_status['status'] == 'shutdown'
   retries: 20
-  delay: 30 
-  when: r_virt_install['failed'] == false
+  delay: 30
+  when: not hostvars[fqdn]['volume_image_file_exists']
+
 
 # clean up
 #
-- name: remove temporary files
+- name: Remove temporary files
   ansible.builtin.file:
-    name: "{{ item }}"
+    name: "{{ l_file }}"
     state: absent
   loop:
     - "{{ kickstart_path }}/{{ kickstart_file }}"
     - "{{ kickstart_path }}/{{ fqdn }}-install.sh"
+  loop_control:
+    loop_var: l_file
+  when: not hostvars[fqdn]['volume_image_file_exists']
 
+
+# Fail if no storage volume was created.
+#
+- name: "Check if image file was created: /var/lib/libvirt/images/{{ fqdn }}.qcow2" 
+  ansible.builtin.stat:
+    path: "/var/lib/libvirt/images/{{ fqdn }}.qcow2"
+    get_checksum: false
+  register: r_qcow2
+#
+- name: Fail if image file was not created
+  ansible.builtin.fail:
+    msg: "Storage volume was not created: /var/lib/libvirt/images/{{ fqdn }}.qcow2"
+  when: not r_qcow2.stat.exists
+
+- name: Display update
+  ansible.builtin.debug:
+    msg: "VM {{ fqdn }} on {{ inventory_hostname }} is installed and shutdown"
+
+- name: There is now an image file
+  ansible.builtin.set_fact:
+    volume_image_file_exists: true
+  delegate_to: "{{ fqdn }}"
+  delegate_facts: true

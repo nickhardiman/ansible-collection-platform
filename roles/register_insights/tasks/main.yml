@@ -1,0 +1,40 @@
+---
+# tasks file 
+
+# proxy
+# insights-client reads proxy settings from here.
+#  /etc/rhsm/rhsm.conf
+#  /etc/insights-client/insights-client.conf
+# reference
+# Accessing Red Hat Insights through a Firewall/Proxy
+# https://access.redhat.com/solutions/1583183
+
+# check 
+# If status check passes, 
+# assume this server is already registered to insights.
+- name: "Is {{ fqdn }} already registered to insights? "
+  ansible.builtin.command: 
+    cmd: /usr/bin/insights-client --status
+  register: r_ic_status
+  ignore_errors: yes
+- name: "registered?"
+  ansible.builtin.set_fact:
+    f_ic_registered: "{{ not r_ic_status.failed }}"
+- ansible.builtin.debug:
+    var: f_ic_registered
+
+
+# !!! many failures trying to use 
+# https://console.redhat.com/ansible/automation-hub/repo/published/redhat/rhel_system_roles/content/role/rhc/
+# probably due to proxy settings.  
+# ??? no setting in /etc/insights-client/insights-client.conf
+# see 
+#    !!! proxy bypass list missing. 
+# in satellite_repo_consumer role. 
+#    tail -f /var/log/insights-client/insights-client.log 
+# on managed node.
+
+- name: "Register this system with Red Hat Insights"
+  ansible.builtin.shell:
+    cmd: insights-client --register
+  when: not f_ic_registered

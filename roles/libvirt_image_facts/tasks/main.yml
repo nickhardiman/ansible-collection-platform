@@ -10,22 +10,19 @@
 
 # check for a cached storage base file.
 - name: Look for the machine base volume.
-  ansible.builtin.stat:
-    path: "/var/lib/libvirt/images/{{ fqdn }}-base.qcow2"
-  register: r_volume_base
-- name: "does the volume '/var/lib/libvirt/images/{{ fqdn }}-base.qcow2' already exist?"
-  ansible.builtin.set_fact:
-    volume_base_file_exists: "{{ r_volume_base.stat.exists | bool }}"
-- ansible.builtin.debug:
-    var: volume_base_file_exists
+  ansible.builtin.include_tasks:
+    file: check_host.yml
+  loop: "{{ groups[ hostvars[inventory_hostname]['vm_group'] ] }}"
 
-# check for an image file. 
-- name: Look for the machine image volume.  
-  ansible.builtin.stat: 
-    path: "/var/lib/libvirt/images/{{ fqdn }}.qcow2"
-  register: r_volume_image
-- name: "does the volume '/var/lib/libvirt/images/{{ fqdn }}.qcow2' already exist?"
-  ansible.builtin.set_fact:
-    volume_image_file_exists: "{{ r_volume_image.stat.exists | bool }}"
-- ansible.builtin.debug:
-    var: volume_image_file_exists
+- name: Display new 'volume_image_file_exists' variables
+  ansible.builtin.debug:
+    verbosity: 1
+    msg: "hostvars['{{ item }}']['volume_image_file_exists']: {{ hostvars[item]['volume_image_file_exists'] }}"
+  loop: "{{ groups[ hostvars[inventory_hostname]['vm_group'] ] }}"
+
+- name: Display new 'volume_base_file_exists' variables
+  ansible.builtin.debug:
+    verbosity: 1
+    msg: "hostvars['{{ item }}']['volume_base_file_exists']: {{ hostvars[item]['volume_base_file_exists'] }}"
+  loop: "{{ groups[ hostvars[inventory_hostname]['vm_group'] ] }}"
+

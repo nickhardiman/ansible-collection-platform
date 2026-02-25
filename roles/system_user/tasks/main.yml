@@ -1,0 +1,25 @@
+---
+# tasks file
+- name: "Create group {{ group }}"
+  ansible.builtin.group:
+    name: "{{ group }}"
+    gid: "{{ gid | default(omit) }}"
+    system: true
+    state: present
+
+- name: "Create user {{ user }}"
+  ansible.builtin.user:
+    name: "{{ user }}"
+    uid: "{{ uid | default(omit) }}"
+    group: "{{ group }}"
+    system: true
+    state: present
+
+- name: "Get ID"
+  ansible.builtin.command:
+    cmd: "/usr/bin/id {{ user }}"
+  register: r_id
+  changed_when: false
+- name: "Display ID"
+  ansible.builtin.debug:
+    var: r_id['stdout']

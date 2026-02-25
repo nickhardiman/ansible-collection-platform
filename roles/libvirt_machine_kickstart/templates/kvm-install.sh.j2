@@ -2,16 +2,14 @@
   
 virt-install   \
   --name="{{ fqdn }}"  \
-  --vcpus="{{ cpus }}"  \
-  --ram="{{ ram }}"  \
-  --disk="path=/var/lib/libvirt/images/{{ fqdn }}.qcow2,bus=virtio,size={{ disk_size }},sparse=yes"  \
-  --os-variant="{{ os_variant }}"  \
-{% for nic in nics %}
+  --vcpus="{{ hostvars[fqdn]['cpus'] }}"  \
+  --ram="{{ hostvars[fqdn]['ram'] }}"  \
+  --disk="path=/var/lib/libvirt/images/{{ fqdn }}.qcow2,bus=virtio,size={{ hostvars[fqdn]['disk_size'] }},sparse=yes"  \
+  --os-variant="{{ hostvars[fqdn]['os_variant'] }}"  \
+{% for nic in hostvars[fqdn]['nics'] %}
   --network="network={{ nic.net }},mac={{ nic.mac }}"  \
 {% endfor %}
-  --boot="uefi,hd,menu=on"  \
-  --location="{{ install_iso }}"  \
+  --location="{{ hostvars[fqdn]['install_iso'] }}"  \
   --initrd-inject="{{ kickstart_path }}/{{ kickstart_file }}"  \
   --extra-args "inst.ks=file:/{{ kickstart_file }} console=tty0 console=ttyS0,115200"   \
-  --noautoconsole  
-  
+  --noautoconsole

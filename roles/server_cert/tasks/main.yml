@@ -1,57 +1,90 @@
 ---
 # tasks file for server_cert
 
-# files 
+# trust the CA certificate and create a server certificate
+# reference
+# https://docs.ansible.com/ansible/latest/collections/community/crypto/openssl_csr_module.html
+
+# files used on the controller node
 # CA private key
-#    password protected
-#    hypervisor:/etc/pki/tls/private/ca-certificate.key
-# CA certificate 
-#    hypervisor:/etc/pki/ca-trust/source/anchors/ca-certificate.pem
+#    password protected?
+#    controller:/etc/pki/tls/private/{{ ca_fqdn }}-key.pem
+# CA certificate
+#    controller:/etc/pki/ca-trust/source/anchors/{{ ca_fqdn }}-cert.pem
+#
+# files created on the managed node
 # server private key
 #    server:"/etc/pki/tls/private/{{ server_cn }}.key"
 # server CSR
 #    stored in-memory, not written to a file
-# server certificate 
+# CA certificate
+#    server:/etc/pki/ca-trust/source/anchors/{{ ca_fqdn }}-cert.pem
+# server certificate
 #    server:"/etc/pki/tls/private/{{ server_cn }}.key"
+#
+# checks
+# view certificate SANs (subject alternative names)
+#    openssl x509 -in /etc/pki/tls/certs/{{ server_cn }}.pem -ext subjectAltName  -noout
 
+# X509v3 Key Usage
+# Satellite requires the 'Key Encipherment' key usage.
+# Chrome throws error ERR_SSL_KEY_USAGE_INCOMPATIBLE with only 'Key Encipherment'
+# so include digitalSignature, nonRepudiation, and keyEncipherment.
+# Firefox doesn't care.
+# Key usage options are listed here.
+#   https://www.openssl.org/docs/manmaster/man5/x509v3_config.html
+# options
+#   digitalSignature, nonRepudiation, keyEncipherment, dataEncipherment, 
+#   keyAgreement, keyCertSign, cRLSign, encipherOnly, and decipherOnly.
+# X509v3 Extended Key Usage
+# Satellite may need these.
+#   TLS Web Server Authentication, TLS Web Client Authentication, Code Signing, E-mail Protection
+# options
+#   serverAuth, clientAuth, codeSigning, emailProtection, timeStamping, OCSPSigning, ipsecIKE, msCodeInd, msCodeCom, msCTLSign, msEFS  
 
 # CA certificate 
 #
-- name: Copy CA certificate to trust anchors /etc/pki/ca-trust/source/anchors/ca-certificate.pem
+- name: "Copy CA certificate to trust anchors /etc/pki/ca-trust/source/anchors/{{ ca_fqdn }}-cert.pem"
   ansible.builtin.copy:
-    src: /etc/pki/ca-trust/source/anchors/ca-certificate.pem
-    #src: ca-certificate.pem
-    dest: /etc/pki/ca-trust/source/anchors/ca-certificate.pem
+    src: /etc/pki/ca-trust/source/anchors/{{ ca_fqdn }}-cert.pem
+    dest: /etc/pki/ca-trust/source/anchors/{{ ca_fqdn }}-cert.pem
     mode: '0644'
   register: r_cp_ca_cert
-
-- name: Update libraries of trusted CA certificates
-  ansible.builtin.command:
-    cmd: update-ca-trust
-  when: r_cp_ca_cert['changed'] == true
+  notify: Update libraries of trusted CA certificates
 
 # server private key
 #
 # create private key {{ server_cn }}.key
-# check with 
+# check with
 #   openssl rsa -check -noout -in {{ server_cn }}.key
 - name: "Create server private key /etc/pki/tls/private/{{ server_cn }}.key"
   community.crypto.openssl_privatekey:
     path: "/etc/pki/tls/private/{{ server_cn }}.key"
     mode: '0600'
-    #passphrase: "{{ server_secret_passphrase }}"
-    #cipher: auto
+    # passphrase: "{{ server_secret_passphrase }}"
+    # cipher: auto
 
 # server certificate signing request
 #
 # create certificate and signing request {{ server_cn }}.csr
-# View attributes and values in the CSR. 
+# View attributes and values in the CSR.
 #   openssl req -text -in {{ server_cn }}.csr
 - name: Generate an OpenSSL CSR (Certificate Signing Request) for the server
   community.crypto.openssl_csr_pipe:
     privatekey_path: "/etc/pki/tls/private/{{ server_cn }}.key"
     common_name: "{{ server_cn }}"
+    subject_alt_name: "{{ subject_alt_name | default(omit) }}"
+    key_usage:
+      - digitalSignature
+      - nonRepudiation
+      - keyEncipherment
+    extended_key_usage:
+      - serverAuth
+      - clientAuth
+      - codeSigning
+      - emailProtection
   register: r_csr
+
 
 # server certificate
 #
@@ -60,7 +93,7 @@
 # View attributes and values in the new certificate.
 #   openssl x509 -in {{ server_cn }}.pem -noout -text
 # Check the certificate chain.
-#   openssl verify -CAfile  ca-certificate.pem  {{ server_cn }}.pem
+#   openssl verify -CAfile  {{ ca_fqdn }}-cert.pem  {{ server_cn }}.pem
 # Check the server certificate and key match by comparing the modulus of each.
 #   openssl x509 -noout -modulus -in {{ server_cn }}.pem | openssl md5
 #   openssl rsa  -noout -modulus -in {{ server_cn }}.key | openssl md5
@@ -68,8 +101,8 @@
   community.crypto.x509_certificate_pipe:
     csr_content: "{{ r_csr['csr'] }}"
     provider: ownca
-    ownca_path: /etc/pki/ca-trust/source/anchors/ca-certificate.pem
-    ownca_privatekey_path: /etc/pki/tls/private/ca-certificate.key
+    ownca_path: /etc/pki/ca-trust/source/anchors/{{ ca_fqdn }}-cert.pem
+    ownca_privatekey_path: /etc/pki/tls/private/{{ ca_fqdn }}-key.pem
     # !!! removed encryption. See bootstrap.sh
     # ownca_privatekey_passphrase: "{{ ca_secret_passphrase }}"
     ownca_not_after: +365d  # valid for one year
@@ -78,6 +111,6 @@
   register: r_cert
 
 - name: "Write certificate to /etc/pki/tls/certs/{{ server_cn }}.pem"
-  copy:
+  ansible.builtin.copy:
     dest: "/etc/pki/tls/certs/{{ server_cn }}.pem"
     content: "{{ r_cert['certificate'] }}"

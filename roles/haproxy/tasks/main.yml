@@ -9,11 +9,43 @@
 
 - name: Copy configuration
   ansible.builtin.template:
-    src: haproxy.cfg.j2
+    src: "{{ haproxy_config_file_template }}"
     dest: "/etc/haproxy/haproxy.cfg"
+  notify: Reload haproxy
 
-- name: Start and enable service httpd
+- name: Start and enable service haproxy
   ansible.builtin.service:
     name: haproxy
     enabled: true
     state: started
+
+- name: Permit service traffic to plaintext web
+  ansible.posix.firewalld:
+    service: http
+    immediate: true
+    permanent: true
+    state: enabled
+
+- name: Permit service traffic to encrypted web
+  ansible.posix.firewalld:
+    service: https
+    immediate: true
+    permanent: true
+    state: enabled
+
+- name: Permit service traffic to scoreboard
+  ansible.posix.firewalld:
+    port: 9000/tcp
+    immediate: true
+    permanent: true
+    state: enabled
+
+# Required for sticky load balancing using a stick table. 
+# https://www.haproxy.com/documentation/haproxy-configuration-tutorials/core-concepts/stick-tables/
+# !!! difference between http_port_t and http_cache_port_t?
+- name: Allow haproxy to listen on tcp port 10000
+  community.general.seport:
+    ports: 10000
+    proto: tcp
+    setype: http_port_t
+    state: present

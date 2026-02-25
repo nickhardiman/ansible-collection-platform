@@ -1,0 +1,7 @@
+---
+# defaults file 
+
+rhsm_user:               me
+rhsm_password:           "my_pass!"
+server_proxy_hostname:   proxy.example.com
+server_proxy_port:       "8080"

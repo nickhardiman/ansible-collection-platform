@@ -1,22 +1,31 @@
 ---
-# tasks file for virtualization-host
+# tasks file
+# reference
+# systemctl commands to start libvirt modular daemons
+# https://libvirt.org/daemons.html#switching-to-modular-daemons
+# network descriptions
+# https://wiki.libvirt.org/VirtualNetworking.html
+# virtualization on RHEL 9
+# https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/9/html/configuring_and_managing_virtualization/index
 
+# https://docs.ansible.com/ansible/latest/collections/ansible/builtin/dnf_module.html
 - name: Install the 'Virtualization Host' environment group and friends
-  dnf:
-    name: 
-    - '@virtualization-host-environment'
-    - python3-libvirt
-    - virt-install
-    - cockpit
-    - cockpit-machines
+  ansible.builtin.dnf:
+    name:
+      - '@virtualization-host-environment'
+      - python3-libvirt
+      - virt-install
+      - cockpit
+      - cockpit-machines
+      - guestfs-tools  # provides virt-customize and other tools
     state: present
 
 # https://docs.ansible.com/ansible/latest/collections/ansible/builtin/systemd_module.html
-- name: enable libvirt's systemd socket files
+- name: Enable libvirt's systemd socket files
   ansible.builtin.systemd:
     name: "{{ item }}"
-    enabled: yes
-    masked: no
+    enabled: true
+    masked: false
   loop:
     - virtnetworkd-admin.socket
     - virtnetworkd-ro.socket
@@ -37,11 +46,11 @@
     - virtstoraged-ro.socket
     - virtstoraged.socket
 
-- name: enable libvirt's systemd service files
+- name: Enable libvirt's systemd service files
   ansible.builtin.systemd:
     name: "{{ item }}"
-    enabled: yes
-    masked: no
+    enabled: true
+    masked: false
   loop:
     - virtnetworkd.service
     - virtnodedevd.service
@@ -50,7 +59,7 @@
     - virtsecretd.service
     - virtstoraged.service
 
-- name: start libvirt's systemd socket files
+- name: Start libvirt's systemd socket files
   ansible.builtin.systemd:
     name: "{{ item }}"
     state: started
@@ -73,4 +82,3 @@
     - virtstoraged-admin.socket
     - virtstoraged-ro.socket
     - virtstoraged.socket
-

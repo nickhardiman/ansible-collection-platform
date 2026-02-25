@@ -1,2 +1,6 @@
 ---
 # handlers file for server_cert
+
+- name: Update libraries of trusted CA certificates
+  ansible.builtin.command:
+    cmd: update-ca-trust

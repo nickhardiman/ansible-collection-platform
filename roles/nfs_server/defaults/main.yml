@@ -1,0 +1,14 @@
+---
+# defaults file
+
+directories_to_export:
+  - directory: /var/nfs/projects/pulp
+    user: pulp
+    group: pulp
+    selinux_file_context_type: nfs_t
+    nfs_options: '*(rw,no_root_squash)'
+  - directory: /var/nfs/projects/pulp/pulpcore_static
+    user: pulp
+    group: pulp
+    selinux_file_context_type: httpd_sys_rw_content_t
+    nfs_options: '*(rw,no_root_squash)'

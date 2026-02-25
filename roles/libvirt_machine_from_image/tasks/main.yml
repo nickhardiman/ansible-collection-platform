@@ -1,0 +1,56 @@
+---
+# Based on this excellent article.
+# Ricardo Gerardi
+# Build a lab in 36 seconds with Ansible
+# https://www.redhat.com/sysadmin/build-VM-fast-ansible
+
+# check
+# !!! If an instance is already running, skip this work.
+
+- name: "Display hosts"
+  ansible.builtin.debug:
+    verbosity: 1
+    var: hosts_to_build
+
+- name: List running VMs
+  community.libvirt.virt:
+    command: list_vms
+    state: running
+  register: r_running_vms
+
+- name: "Is this VM running? {{ fqdn }}"
+  ansible.builtin.set_fact:
+    f_is_running: "{{ r_running_vms['list_vms'] is ansible.builtin.contains(fqdn) }}"
+- name: "Display answer"
+  ansible.builtin.debug:
+    verbosity: 1
+    var: f_is_running
+
+- name: Create an image from a web download
+  ansible.builtin.include_tasks: image-from-web.yml
+  when: image_from_web
+
+- name: Create an image from a base image file
+  ansible.builtin.include_tasks: image-from-base.yml
+  when: image_from_base
+
+- name: Create an image from an image template file
+  ansible.builtin.include_tasks: image-from-template.yml
+  when: image_from_template
+
+- name: Copy VM config from the hypervisor
+  ansible.builtin.include_tasks: config-from-remote-file.yml
+  when: config_from_hypervisor
+
+- name: Copy VM config from Jinja2 template file
+  ansible.builtin.include_tasks: config-from-template.yml
+  when: config_from_template
+
+
+- name: Create a new VM
+  when: not f_is_running
+  block:
+    - name: Create VM config
+      ansible.builtin.include_tasks: vm-define.yml
+    - name: Start VM
+      ansible.builtin.include_tasks: vm-start.yml

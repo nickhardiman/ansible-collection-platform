@@ -1,2 +1,3 @@
 ---
 # defaults file 
+wait_for_ping: true

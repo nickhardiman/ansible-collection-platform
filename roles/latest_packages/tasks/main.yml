@@ -2,22 +2,21 @@
 # make sure the new machine has been rebooted before upgrading all packages
 # If kickstart failed to register with RHSM, this module does nothing.
 - name: Upgrade all packages
-  ansible.builtin.dnf:
+  ansible.builtin.yum:
     name: "*"
     state: latest
-  register: r_dnf
+  register: r_yum
 
-- debug:
-    var: r_dnf
+- name: Display
+  ansible.builtin.debug:
+    var: r_yum
 
-- name: can the OS survive another reboot? 
+- name: Can the OS survive another reboot?
   ansible.builtin.reboot:
-  when: r_dnf['changed'] == true
+  when: r_yum['changed']
 
-- name: "can we ping {{ inventory_hostname }} after the reboot?"
+- name: "Can we ping {{ inventory_hostname }} after the reboot?"
   ansible.builtin.wait_for_connection:
     delay: 10
     timeout: 30
   delegate_to: "{{ inventory_hostname }}"
-
-

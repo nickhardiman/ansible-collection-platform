@@ -1,10 +1,10 @@
 ---
-# tasks file 
+# tasks file
 
-- name: required packages
-  ansible.builtin.dnf:
+- name: Install required packages
+  ansible.builtin.yum:
     name: cockpit
-    state: latest
+    state: present
 
 - name: Start the sysadmin console 'cockpit' if a request comes in
   ansible.builtin.systemd_service:

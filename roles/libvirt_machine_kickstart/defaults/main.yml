@@ -1,93 +1,103 @@
 ---
 # defaults file 
-default_password: Password;1
 
-# compute
-cpus: 2
-# size in MiB
-ram: 4096
-
-# storage
-# size in GiB
-disk_size: 30
-# Add up the sizes below and make sure they fit in the disk_size.
-# partitions
-# 1 for /boot/efi                600M
-# 2 for /boot                    1024M
-# 3 LVM Physical Volume          28G * 1024 = 28672M
-pv_size: 28672
-# LVM logical volume for /root   13G * 1024 = 13312M
-lv_root: 13312
-# LVM logical volume for /var   13G * 1024 = 13312M
-lv_var: 13312
-# LVM volume for swap: 256M
-
-# network
-# MAC address list here
-#   https://hardiman.consulting/rhel/9/set-up/host1-libvirt-network.html
-lab_net_short_name: lab
-lab_libvirt_name:   "net{{ lab_net_short_name }}0"
-lab_net_prefix: "192.168.134"
-lab_mac_prefix: "52:54:00:02"
-nics: 
--  
-  name: enp1s0 
-  mac: "{{ lab_mac_prefix }}:00:99"
-  net: "{{ lab_libvirt_name }}"
-
-# OS
-host: kvm-guest
-fqdn: "{{ host }}.lab.example.com"
-install_iso: /var/lib/libvirt/images/rhel-9.2-x86_64-dvd.iso
-# Use this command to get the list of accepted OS variants.
-#  virt-install --osinfo list
-os_variant: rhel9.2
-RPMs: []
-
-# kickstart
-# playbook copies kvm-guest.ks to /var/tmp/
-# !!! replace /var/tmp with a temporary ansible working directory
 kickstart_path: "/var/tmp"
 kickstart_file: "{{ fqdn }}.ks"
-kickstart_template: kvm-guest.ks.j2
-
-# accounts
-#
-# Red Hat Subscription Management user
-rhsm_user: RH_user
-# In the real world, a password would be protected.
-# It would be encrypted, managed by a vault service, or stored away from git.
-# For Ansible vault, see
-# https://docs.ansible.com/ansible/latest/user_guide/vault.html#encrypting-individual-variables-with-ansible-vault
-rhsm_password: RH_password
-rhsm_pool_id: 12345
-#
-# Kickstart's "user" directive has the --iscrypted option.
-# The command 
-#   openssl passwd  -6 --salt SQXqGsYna84.3SL5 "Password;1" 
-# turns "Password;1" into this. 
-#   $6$SQXqGsYna84.3SL5$gJw6v23ZZ7WEITfBoZmyNDsIKeoqhS2Mwfk.KpCRloK7EfxlhL3MAlTCO33fr7QRfoG.GvBH1seWtQqz5v82q1
-# The long encrypted string is made of a few fields, separated by "$".
-# The first 16 characters of the second field are a "salt".
-#
-# superuser
-user_root_password: "{{ default_password }}"
-user_root_password_encrypted: "{{ lookup('ansible.builtin.pipe', '/usr/bin/openssl passwd  -6 --salt=G3GIlnUH.JqcrAQl ' + user_root_password  | quote ) }}"
-#
-# user account for a sysadmin
-user_admin_name: nick
-user_admin_password: "{{ default_password }}"
-user_admin_password_encrypted: "{{ lookup('ansible.builtin.pipe', '/usr/bin/openssl passwd  -6 --salt=G3GIlnUH.JqcrAQl ' + user_admin_password  | quote ) }}"
-# !!! add workstation pubkey to vault via bootstrap script
-# user_admin_public_key: |
-#   add this to vault!
-#
-# system account for management
-user_ansible_name: ansible_user
-# This password is for privilege escalation.
-user_ansible_password: "{{ default_password }}"
+# user_admin_password: "{{ default_password }}"
+# user_ansible_password: "{{ default_password }}"
+# user_root_password: "{{ default_password }}"
+user_root_password_encrypted:    "{{ lookup('ansible.builtin.pipe', '/usr/bin/openssl passwd  -6 --salt=G3GIlnUH.JqcrAQl ' + user_root_password  | quote ) }}"
+user_admin_password_encrypted:   "{{ lookup('ansible.builtin.pipe', '/usr/bin/openssl passwd  -6 --salt=G3GIlnUH.JqcrAQl ' + user_admin_password  | quote ) }}"
 user_ansible_password_encrypted: "{{ lookup('ansible.builtin.pipe', '/usr/bin/openssl passwd  -6 --salt=G3GIlnUH.JqcrAQl ' + user_ansible_password  | quote ) }}"
-# This key is for SSH login.
-# !!! read this from vault
-user_ansible_public_key: |
-  ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDquGwhrEjnjr/5mtq31gPVF448SDxdpqbYVdrQ34yttzgaJcMPaK5ukywY9UDvAs7MCzoheK3jG9ba6Io7a57X86jfcRsXnBxXSQhyTW1QZempHmfp0U4ZfTSRvAsZ8Z39pQuk3bB6DerQUars+CJzS4PYPuNbOfGuIkIsFgN59NhOQNh+vxkhpMtCSlMzR4bSydw8oz9NUuFwXrJefHN9w0m+LifUF0/GLx4dOf2AItoF28lTrpcF2cEXS3LfTV3lcZK1GpSKAJliNi2YM+zwTQqKGVk6O8XWHXmfLF0PS9aCqKooO8zjpHfdGJrxADKbfixgA7Mxf1FCy5vhPa5+v9q8XRO61e16VNeQPsvTv8czJC9WFaG3WrNP14GJ/7ycpqQR/g1AOFi0JsnzZDJbE6XdBOFENweEmWnapbqsl85MIm+zUnUot8gRUQakPQ3BtHd7KqwIXEMoo+UrDnHQI1YcBhh9MbS/kfHVe5V/1oKja91iZD+7bnHgQwtKVCk= root@host.build.example.com
+
+# The role expects to get these variables from hostvars and vault.
+# They are used in the kicstart template.
+
+# # compute
+# cpus: 2
+# # size in MiB
+# ram: 4096
+
+# # storage
+# # size in GiB
+# disk_size: 30
+# # Add up the sizes below and make sure they fit in the disk_size.
+# # partitions
+# # 1 for /boot/efi                600M
+# # 2 for /boot                    1024M
+# # 3 LVM Physical Volume          28G * 1024 = 28672M
+# pv_size: 28672
+# # LVM logical volume for /root   13G * 1024 = 13312M
+# lv_root: 13312
+# # LVM logical volume for /var   13G * 1024 = 13312M
+# lv_var: 13312
+# # LVM volume for swap: 256M
+
+# # network
+# # MAC address list here
+# #   https://hardiman.consulting/rhel/9/set-up/host1-libvirt-network.html
+# lab_net_short_name: lab
+# lab_libvirt_name: "net{{ lab_net_short_name }}0"
+# lab_net_prefix: "192.168.134"
+# lab_mac_prefix: "52:54:00:02"
+# nics:
+#   -
+#     name: enp1s0
+#     mac: "{{ lab_mac_prefix }}:00:99"
+#     net: "{{ lab_libvirt_name }}"
+
+# # OS
+# host: kvm-guest
+# fqdn: "{{ host }}.lab.example.com"
+# install_iso: /var/lib/libvirt/images/rhel-9.4-x86_64-dvd.iso
+# # Use this command to get the list of accepted OS variants.
+# #  virt-install --osinfo list
+# os_variant: rhel9.4
+# RPMs: []
+
+# # kickstart
+# # playbook copies kvm-guest.ks to /var/tmp/
+# # !!! replace /var/tmp with a temporary ansible working directory
+# kickstart_path: "/var/tmp"
+# kickstart_template: kvm-guest.ks.j2
+
+# # accounts
+# #
+# default_password: Password;1j
+# # Red Hat Subscription Management user
+# rhsm_user: RH_user
+# # In the real world, a password would be protected.
+# # It would be encrypted, managed by a vault service, or stored away from git.
+# # For Ansible vault, see
+# # https://docs.ansible.com/ansible/latest/user_guide/vault.html#encrypting-individual-variables-with-ansible-vault
+# rhsm_password: RH_password
+# rhsm_pool_id: 12345
+# #
+# # Kickstart's "user" directive has the --iscrypted option.
+# # The command
+# #   openssl passwd  -6 --salt SQXqGsYna84.3SL5 "Password;1"
+# # turns "Password;1" into this.
+# #   $6$SQXqGsYna84.3SL5$gJw6v23ZZ7WEITfBoZmyNDsIKeoqhS2Mwfk.KpCRloK7EfxlhL3MAlTCO33fr7QRfoG.GvBH1seWtQqz5v82q1
+# # This long string is made of a few fields, separated by "$".
+# # The first field is type, second is the "salt", and third is ciphertext (encrypted value).
+# #
+# # superuser
+# user_root_password: "{{ default_password }}"
+# user_root_password_encrypted: "{{ lookup('ansible.builtin.pipe', '/usr/bin/openssl passwd  -6 --salt=G3GIlnUH.JqcrAQl ' + user_root_password  | quote ) }}"
+# #
+# # user account for a sysadmin
+# user_admin_name: nick
+# user_admin_password: "{{ default_password }}"
+# user_admin_password_encrypted: "{{ lookup('ansible.builtin.pipe', '/usr/bin/openssl passwd  -6 --salt=G3GIlnUH.JqcrAQl ' + user_admin_password  | quote ) }}"
+# user_admin_public_key: |
+#   ssh-rsa notarealkey+QABAAABgQDquGwhrEjnjr/LfThPapbqsl85MIm+zUnUot8gRUQakPQ3BtHd7KqwIXEMoo+UrHgQwtKVCk= admin@default
+# #
+# # system account for management
+# user_ansible_name: ansible_user
+# # This password is for privilege escalation.
+# user_ansible_password: "{{ default_password }}"
+# user_ansible_password_encrypted: "{{ lookup('ansible.builtin.pipe', '/usr/bin/openssl passwd  -6 --salt=G3GIlnUH.JqcrAQl ' + user_ansible_password  | quote ) }}"
+# # This key is for SSH login.
+# # !!! read this from vault
+# user_ansible_public_key: |
+#   ssh-rsa notarealkey+QABAAABgQDquGwhrEjnjr/LfThPapbqsl85MIm+zUnUot8gRUQakPQ3BtHd7KqwIXEMoo+UrHgQwtKVCk= ansible@default

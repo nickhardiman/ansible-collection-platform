@@ -1,0 +1,7 @@
+---
+# defaults file
+
+user: pulp
+uid: 984
+group: pulp
+gid: 984
