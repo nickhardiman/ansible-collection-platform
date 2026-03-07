@@ -1,5 +1,6 @@
-# Ansible Collection - nick.platform
+= Ansible Collection - nickhardiman.platform
 
+Yet another refactor of my home lab automation
 
 == third attempt, RHEL lab 
 
@@ -9,11 +10,11 @@ network of virtual machines on one fresh RHEL 10 host.
 
 take the AAP2 work and break up into less choking chunks
 
-* script-rhel-setup
-* ansible-playbook-rhel-lab
-* ansible-collection-platform
-* ansible-collection-vm-gateway
-* ansible-collection-libvirt
+* https://github.com/nickhardiman/script-rhel-setup
+* https://github.com/nickhardiman/ansible-playbook-rhel-lab
+* https://github.com/nickhardiman/ansible-collection-platform
+* https://github.com/nickhardiman/ansible-collection-libvirt
+* https://github.com/nickhardiman/ansible-collection-vm-gateway
 
 
 == second attempt, AAP2 refarch
@@ -22,7 +23,7 @@ couple years ago
 
 network of virtual machines on three fresh RHEL 9 hosts.
 
-works, but an absolute monster 
+worked, but an absolute monster 
 
 * https://github.com/nickhardiman/ansible-playbook-aap-lab
 * https://github.com/nickhardiman/ansible-collection-platform
