@@ -1,5 +1,0 @@
----
-# handlers file for custom-os
-
-- name: Reboot
-  ansible.builtin.reboot:

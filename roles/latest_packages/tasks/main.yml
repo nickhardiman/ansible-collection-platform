@@ -11,12 +11,24 @@
   ansible.builtin.debug:
     var: r_yum
 
-- name: Can the OS survive another reboot?
-  ansible.builtin.reboot:
-  when: r_yum['changed']
+# --reboothint
+#   Only report whether a reboot is required (exit code 1) or not (exit code 0).
+- name: Check if a reboot is required
+  ansible.builtin.command:
+    cmd: /usr/bin/dnf needs-restarting --reboothint
+  changed_when: false
+  register: latest_packages_require_reboot
+  failed_when: latest_packages_require_reboot.rc >= 2
 
-- name: "Can we ping {{ inventory_hostname }} after the reboot?"
-  ansible.builtin.wait_for_connection:
-    delay: 10
-    timeout: 30
-  delegate_to: "{{ inventory_hostname }}"
+- name: Reboot the server (if required)
+  when: latest_packages_require_reboot.rc == 1
+  ansible.builtin.reboot:
+    pre_reboot_delay: 3  # seconds
+    post_reboot_delay: 10
+    reboot_timeout: 30
+
+# - name: "Can we ping {{ inventory_hostname }} after the reboot?"
+#   ansible.builtin.wait_for_connection:
+#     delay: 10
+#     timeout: 30
+#   delegate_to: "{{ inventory_hostname }}"

@@ -5,37 +5,40 @@
 # /sbin/subscription-manager register --auto-attach --username user --password 'pass'
 
 
-# !!! can't remember why I bothered putting in this check. 
+# !!! can't remember why I bothered putting in this check.
 #   subscription-manager status
-# slows things down by a couple minutes. 
-# check 
-# If the instance volume already exists, 
+# slows things down by a couple minutes.
+# check
+# If the instance volume already exists,
 # assume this work has already been done.
-- name: "{{ fqdn }} already registered? "
-  ansible.builtin.command: 
+- name: "Already registered?"
+  ansible.builtin.command:
     cmd: /sbin/subscription-manager status
-  register: r_sm_status
-  ignore_errors: yes
-- name: "registered?"
+  register: register_rhsm_status
+  ignore_errors: true
+  changed_when: false
+
+- name: "Set registered"
   ansible.builtin.set_fact:
-    f_registered: "{{ not r_sm_status.failed }}"
-- ansible.builtin.debug:
+    f_registered: "{{ not register_rhsm_status.failed }}"
+- name: Display registered
+  ansible.builtin.debug:
     var: f_registered
 
 
 # !!! is this module setting values in /etc/rhsm/rhsm.conf?
 # or is it subscription-manager --proxyuser ...  --noproxy ...?
-# I suspect one of them sets fields like this. 
+# I suspect one of them sets fields like this.
 #    proxy_hostname =
-# but there is no way here to set this. 
+# but there is no way here to set this.
 #    no_proxy =
 
 # error after 2 minutes
 #   TimeoutError: [Errno 110] Connection timed out
-# probably means network is broken eg. proxy settings are missing. 
+# probably means network is broken eg. proxy settings are missing.
 # more lines in /var/log/rhsm/rhsm.log
 #
-- name: "register as user {{ rhsm_user }} and auto-subscribe to content"
+- name: "Register and auto-subscribe as user {{ rhsm_user }}"
   community.general.redhat_subscription:
     state: present
     username: "{{ rhsm_user }}"
@@ -43,5 +46,5 @@
     auto_attach: true
     server_proxy_hostname: "{{ server_proxy_hostname | default(omit) }}"
     server_proxy_port: "{{ server_proxy_port | default(omit) }}"
-  # when: 
+  # when:
   # - f_registered == false

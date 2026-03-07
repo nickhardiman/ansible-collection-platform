@@ -1,8 +1,0 @@
-- name: delete a bridge using rhel-system-role network
-  vars:                      
-    network_connections:     
-      - name: "{{ lab_nmcli_name }}"
-        persistent_state: absent
-  include_role:              
-    name: rhel-system-roles.network
- 

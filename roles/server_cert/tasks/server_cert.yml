@@ -1,0 +1,148 @@
+---
+# tasks file for server_cert
+
+# trust the CA certificate 
+# create a server private key
+# create a server certificate signing request
+# create a server certificate
+#
+# reference
+# https://docs.ansible.com/ansible/latest/collections/community/crypto/openssl_csr_module.html
+
+# files used on the controller node
+# CA private key
+#    password protected?
+#    controller:/etc/pki/tls/private/{{ server_cert_config['ca_fqdn'] }}-key.pem
+# CA certificate
+#    controller:/etc/pki/ca-trust/source/anchors/{{ server_cert_config['ca_fqdn'] }}-cert.pem
+#
+# files created on the managed node
+# server private key
+#    server:"/etc/pki/tls/private/{{ server_cert_config['cn'] }}.key"
+# server CSR
+#    stored in-memory, not written to a file
+# CA certificate
+#    server:/etc/pki/ca-trust/source/anchors/{{ server_cert_config['ca_fqdn'] }}-cert.pem
+# server certificate
+#    server:"/etc/pki/tls/certs/{{ server_cert_config['cn'] }}.key"
+
+# checks
+# 
+# view private key
+#   openssl rsa -check -noout -in {{ server_cert_config['cn'] }}.key
+#
+# view attributes and values in the CSR
+# Requires community.crypto.openssl_csr, not openssl_csr_pipe. See:
+#   https://docs.ansible.com/projects/ansible/latest/collections/community/crypto/openssl_csr_module.html
+#   openssl req -text -in {{ server_cert_config['cn'] }}.csr
+#
+# view certificate SANs (subject alternative names)
+#    openssl x509 -in /etc/pki/tls/certs/{{ server_cert_config['cn'] }}.pem -ext subjectAltName  -noout
+#
+# View attributes and values in the new certificate.
+#   openssl x509 -in {{ server_cert_config['cn'] }}.pem -noout -text
+# Check the certificate chain.
+#   openssl verify -CAfile  {{ server_cert_config['ca_fqdn'] }}-cert.pem  {{ server_cert_config['cn'] }}.pem
+# Check the server certificate and key match by comparing the modulus of each.
+#   openssl x509 -noout -modulus -in {{ server_cert_config['cn'] }}.pem | openssl md5
+#   openssl rsa  -noout -modulus -in {{ server_cert_config['cn'] }}.key | openssl md5
+
+# Bash shell alternative 
+# # be tidy
+#     mkdir cert
+#     cd cert
+# # create key
+#     SERVER=www.lab.example.com
+#     openssl genrsa -out $SERVER.key 2048
+# # create certificate
+#     openssl req -new   \
+#       -config ../CA/openssl.cnf     \
+#       -out $SERVER.csr   \
+#       -nodes  \
+#       -key $SERVER.key \
+#       -subj "/C=UK/ST=mystate/O=myorg/OU=myou/CN=$SERVER"
+# # sign certificate
+#     sudo -i
+#     cd cert
+#     openssl ca  -in  ./$SERVER.csr -out ./$SERVER.cer
+
+
+# X509v3 Key Usage additions for Red Hat Satellite
+#
+# Satellite requires the 'Key Encipherment' key usage.
+# Chrome throws error ERR_SSL_KEY_USAGE_INCOMPATIBLE with only 'Key Encipherment'
+# so include digitalSignature, nonRepudiation, and keyEncipherment.
+# Firefox doesn't care.
+# Key usage options are listed here.
+#   https://www.openssl.org/docs/manmaster/man5/x509v3_config.html
+# options
+#   digitalSignature, nonRepudiation, keyEncipherment, dataEncipherment,
+#   keyAgreement, keyCertSign, cRLSign, encipherOnly, and decipherOnly.
+# X509v3 Extended Key Usage
+# Satellite may need these.
+#   TLS Web Server Authentication, TLS Web Client Authentication,
+#   Code Signing, E-mail Protection
+# options
+#   serverAuth, clientAuth, codeSigning, emailProtection, timeStamping,
+#   OCSPSigning, ipsecIKE, msCodeInd, msCodeCom, msCTLSign, msEFS
+
+
+# create a server private key
+- name: "Create server private key /etc/pki/tls/private/{{ server_cert_config['cn'] }}.key"
+  community.crypto.openssl_privatekey:
+    path: "/etc/pki/tls/private/{{ server_cert_config['cn'] }}.key"
+    mode: '0600'
+    # passphrase: "{{ server_secret_passphrase }}"
+    # cipher: auto
+
+# create a server certificate signing request
+# For required fields, see policy and [ policy_match ] in /etc/pki/tls/openssl.cnf
+- name: Generate an OpenSSL CSR (Certificate Signing Request) for the server
+  community.crypto.openssl_csr_pipe:
+    privatekey_path: "/etc/pki/tls/private/{{ server_cert_config['cn'] }}.key"
+    country_name: UK
+    state_or_province_name: mystate
+    organization_name: myorg
+    common_name: "{{ server_cert_config['cn'] }}"
+    subject_alt_name: "{{ server_cert_config['subject_alt_name'] | default(omit) }}"
+    key_usage:
+      - digitalSignature
+      - nonRepudiation
+      - keyEncipherment
+    extended_key_usage:
+      - serverAuth
+      - clientAuth
+      - codeSigning
+      - emailProtection
+  register: r_csr
+
+
+
+
+- name: TEST 
+  ansible.builtin.debug:
+    var: "{{ r_csr['csr'] }}"
+
+
+
+# create a server certificate
+#
+# sign on this controller node, not inventory host
+# create signed certificate {{ server_cert_config['cn'] }}.pem
+- name: Sign certificate with our CA
+  community.crypto.x509_certificate_pipe:
+    csr_content: "{{ r_csr['csr'] }}"
+    provider: ownca
+    ownca_path: /etc/pki/ca-trust/source/anchors/{{ server_cert_config['ca_fqdn'] }}-cert.pem
+    ownca_privatekey_path: /etc/pki/tls/private/{{ server_cert_config['ca_fqdn'] }}-key.pem
+    # !!! removed encryption. See bootstrap.sh
+    # ownca_privatekey_passphrase: "{{ server_cert_ca_secret_passphrase }}"
+    ownca_not_after: +365d  # valid for one year
+    ownca_not_before: "-1d"  # valid since yesterday
+  delegate_to: "{{ groups['hypervisor'][0] }}"
+  register: r_cert
+
+- name: "Write certificate to /etc/pki/tls/certs/{{ server_cert_config['cn'] }}.pem"
+  ansible.builtin.copy:
+    dest: "/etc/pki/tls/certs/{{ server_cert_config['cn'] }}.pem"
+    content: "{{ r_cert['certificate'] }}"

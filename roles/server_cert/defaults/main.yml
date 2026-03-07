@@ -1,6 +1,12 @@
 ---
 # defaults file for server_cert
-ca_dir: /root/ca
-ca_secret_passphrase: redhat
-fqdn: host.example.com
-server_cn: "{{ fqdn }}"
+
+server_cert_fqdn: host.example.com
+
+server_cert_config:
+  # ca_dir: /root/ca
+  ca_fqdn: ca.example.com
+  # ca_secret_passphrase: redhat
+  fqdn: "{{ server_cert_fqdn }}"
+  cn: "{{ server_cert_fqdn }}"
+  subject_alt_name: "IP:1.2.3.4"

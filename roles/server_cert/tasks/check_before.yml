@@ -1,0 +1,11 @@
+---
+# check variables
+
+- name: "Check values for {{ server_cert_config['fqdn'] }} on {{ inventory_hostname }}"
+  ansible.builtin.debug:
+    msg: 
+      - "server_cert_config['ca_fqdn']                 {{ server_cert_config['ca_fqdn'] }}"
+      - "server_cert_config['fqdn']                    {{ server_cert_config['fqdn'] }}"
+      - "server_cert_config['cn']                      {{ server_cert_config['cn'] }}"
+      - "server_cert_config['subject_alt_name']        {{ server_cert_config['subject_alt_name'] }}"
+

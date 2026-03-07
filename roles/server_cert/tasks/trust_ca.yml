@@ -1,0 +1,62 @@
+---
+# tasks file for server_cert
+
+# trust the CA certificate 
+
+# files used on the controller node
+# CA private key
+#    password protected?
+#    controller:/etc/pki/tls/private/{{ server_cert_config['ca_fqdn'] }}-key.pem
+# CA certificate
+#    controller:/etc/pki/ca-trust/source/anchors/{{ server_cert_config['ca_fqdn'] }}-cert.pem
+#
+# files created on the managed node
+# CA certificate
+#    server:/etc/pki/ca-trust/source/anchors/{{ server_cert_config['ca_fqdn'] }}-cert.pem
+
+# checks
+# view certificate SANs (subject alternative names)
+#    openssl x509 -in /etc/pki/tls/certs/{{ server_cert_config['cn'] }}.pem -ext subjectAltName  -noout
+# CA cert and key match
+#   diff \
+#     <(openssl x509 -noout -modulus -in /etc/pki/ca-trust/source/anchors/ca.silvan.uk-cert.pem) \
+#     <(openssl rsa -noout -modulus -in /etc/pki/tls/private/ca.silvan.uk-key.pem)
+#   # no output - match, output - no match
+#   # or
+#   echo $? # 0 match, 1 no match
+
+# Bash shell alternative 
+# # Add missing config for openssl's CA.
+# #   These locations are set in openssl's config file /etc/pki/tls/openssl.cnf
+#     sudo -i
+#     mkdir     /etc/pki/CA/
+#     mkdir     /etc/pki/CA/{certreqs,crl,private,newcerts}
+#     touch     /etc/pki/CA/index.txt 
+#     echo 01 > /etc/pki/CA/serial 
+# # Create a CA private key.
+#     CA_FQDN=ca.silvan.uk
+#     openssl genrsa \
+#         -out /etc/pki/CA/private/cakey.pem \
+#         2048
+# # Create a CA certificate.
+#     openssl req \
+#         -x509 \
+#         -sha256 \
+#         -days 365 \
+#         -nodes \
+#         -subj "/C=UK/ST=mystate/O=myorg/OU=myou/CN=$CA_FQDN" \
+#         -out /etc/pki/CA/cacert.pem
+#  # Trust 
+#     cp /etc/pki/CA/cacert.pem /etc/pki/ca-trust/source/anchors/$CA_FQDN-cert.pem
+#     update-ca-trust
+
+- name: "Copy CA certificate to trust anchors /etc/pki/ca-trust/source/anchors/{{ server_cert_config['ca_fqdn'] }}-cert.pem"
+  ansible.builtin.copy:
+    src: /etc/pki/ca-trust/source/anchors/{{ server_cert_config['ca_fqdn'] }}-cert.pem
+    dest: /etc/pki/ca-trust/source/anchors/{{ server_cert_config['ca_fqdn'] }}-cert.pem
+    mode: '0644'
+  register: r_cp_ca_cert
+
+- name: Update libraries of trusted CA certificates
+  ansible.builtin.command:
+    cmd: update-ca-trust

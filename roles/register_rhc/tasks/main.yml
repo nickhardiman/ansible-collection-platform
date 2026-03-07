@@ -30,23 +30,31 @@
 # https://access.redhat.com/solutions/7005002
 # rhcd service fails after a few seconds
 # https://access.redhat.com/solutions/7002427
-
-# !!! duplicate of task in
-# ansible_collections/redhat/rhel_system_roles/roles/rhc/tasks/insights-client.yml 
-# - name: Install required packages
-#   ansible.builtin.yum:
-#     name:
-#       - rhc
-#       - rhc-worker-playbook
-#       - ansible-core
-#     state: present
-#   when: ansible_distribution_major_version > 7
-#   register: r_rhc_pkg
 #
-# - name: Display result
-#   ansible.builtin.debug:
-#     var: r_rhc_pkg
-#     verbosity: 1
+# already registered
+#
+# ignore errors
+# Role redhat.rhel_system_roles.rhc fails with this message.
+#   TASK [redhat.rhel_system_roles.rhc : Call subscription-manager] ****************
+#   fatal: [gateway.home]: FAILED! => {"changed": false, "msg":
+#   "Failed to register with 'None': com.redhat.RHSM1.Error:
+#   {\"exception\": \"DBusException\", \"severity\": \"error\",
+#   \"message\": \"This system is already registered.\"}"}
+#
+
+- name: Register with rhc, no proxy
+  ansible.builtin.include_role:
+    name: redhat.rhel_system_roles.rhc
+  vars:
+    rhc_auth:
+      login:
+        username: "{{ rhsm_user }}"
+        password: "{{ rhsm_password }}"
+    rhc_insights:
+      autoupdate: true
+      remediation: present
+  when: not behind_a_proxy
+  ignore_errors: true
 
 - name: Register with rhc
   ansible.builtin.include_role:
@@ -59,16 +67,10 @@
     rhc_proxy:
       hostname: "{{ server_proxy_hostname }}"
       port: "{{ server_proxy_port }}"
-    # rhc_repositories:
-    #   - name: "rhel-9-for-x86_64-baseos-rpms"
-    #     state: enabled
-    #   - name: "rhel-9-for-x86_64-appstream-rpms"
-    #     state: enabled
     rhc_insights:
       autoupdate: true
       remediation: present
-      tags:
-        group: aap_lab
+  when: behind_a_proxy
 
 - name: Create systemd drop-in directory for rhcd /etc/systemd/system/rhcd.service.d/
   ansible.builtin.file:
@@ -77,6 +79,7 @@
     owner: root
     group: root
     mode: '0755'
+  when: behind_a_proxy
 
 - name: "Tell rhcd about proxy http://{{ server_proxy_hostname }}:{{ server_proxy_port }}"
   ansible.builtin.copy:
@@ -89,3 +92,4 @@
     owner: root
     group: root
     mode: '0644'
+  when: behind_a_proxy

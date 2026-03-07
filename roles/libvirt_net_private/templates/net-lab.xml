@@ -1,5 +1,0 @@
-<network>
-  <name>{{ lab_libvirt_name }}</name>
-  <forward mode="bridge"/>
-  <bridge name="{{ lab_bridge_name }}"/>
-</network>

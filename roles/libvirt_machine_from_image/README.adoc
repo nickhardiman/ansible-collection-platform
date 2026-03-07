@@ -1,2 +1,0 @@
-= libvirt_machine_instance, an Ansible role
-
