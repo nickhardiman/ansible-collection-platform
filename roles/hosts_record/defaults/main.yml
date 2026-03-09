@@ -1,5 +1,6 @@
 ---
 # defaults file 
-h_ip_address: 1.2.3.4
-h_fqdn: host.sub.domain
-h_host: host
+hosts_record_conf:
+  ip_address: 1.2.3.4
+  fqdn: host.sub.domain
+  host: host

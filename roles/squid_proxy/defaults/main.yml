@@ -1,5 +1,5 @@
 ---
-# defaults file for dns_server
+# defaults file for squid_proxy
 app_packages:
 - squid
 app_config: squid.conf

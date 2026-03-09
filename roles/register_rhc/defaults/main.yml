@@ -1,8 +1,9 @@
 ---
 # defaults file 
 
-# rhsm_user:               me
-# rhsm_password:           "my_pass!"
-# server_proxy_hostname:   proxy.example.com
-# server_proxy_port:       "8080"
-behind_a_proxy: false
+register_rhc_conf:
+  rhsm_user: me
+  rhsm_password: "my_pass!"
+  behind_a_proxy: false
+  server_proxy_hostname: proxy.example.com
+  server_proxy_port: "8080"

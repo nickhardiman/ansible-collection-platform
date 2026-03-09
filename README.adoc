@@ -15,6 +15,7 @@ take the AAP2 work and break up into less choking chunks
 * https://github.com/nickhardiman/ansible-collection-platform
 * https://github.com/nickhardiman/ansible-collection-libvirt
 * https://github.com/nickhardiman/ansible-collection-vm-gateway
+* https://github.com/nickhardiman/ansible-collection-vm-satellite
 
 
 == second attempt, AAP2 refarch

@@ -20,7 +20,7 @@
 
 - name: Mail settings
   debug:
-    msg: "from null client {{ inventory_hostname }} to relay message.{{ lab_domain }}"
+    msg: "from null client {{ inventory_hostname }} to relay {{ smtp_client_relayhost }}"
 
 - name: "Configure null client"
   ansible.builtin.include_role: 
@@ -29,7 +29,7 @@
     postfix_conf:
       myhostname: "{{ inventory_hostname }}"
       myorigin: "$mydomain"
-      relayhost: "{{ relayhost }}"
+      relayhost: "{{ smtp_client_relayhost }}"
       inet_interfaces: "loopback-only"
       mydestination: ""
 
