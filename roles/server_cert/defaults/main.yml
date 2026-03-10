@@ -9,4 +9,6 @@ server_cert_config:
   # ca_secret_passphrase: redhat
   fqdn: "{{ server_cert_fqdn }}"
   cn: "{{ server_cert_fqdn }}"
-  subject_alt_name: "IP:1.2.3.4"
+  subject_alt_name:
+    - "IP:1.2.3.4"
+    - "DNS:{{ server_cert_fqdn }}"

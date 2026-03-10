@@ -116,14 +116,10 @@
       - emailProtection
   register: r_csr
 
-
-
-
-- name: TEST 
+- name: Display CSR 
   ansible.builtin.debug:
+    verbosity: 1
     var: "{{ r_csr['csr'] }}"
-
-
 
 # create a server certificate
 #
